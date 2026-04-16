@@ -125,7 +125,7 @@
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount">Total: 6 slots</span>
                     </div>
 
-                    <!-- Toolbar with gap fix -->
+                    <!-- Styling Controls -->
                     <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-10 gap-y-4">
                         <div class="flex items-center gap-3">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Box Color:</span>
@@ -282,6 +282,27 @@
             }
         }
 
+        // NEW: Ability to delete a specific page
+        window.removePage = (pageIdx) => {
+            const totalPages = dataStore.length / 6;
+            if (totalPages <= 1) return; // Always keep at least one page
+
+            if(confirm(`Are you sure you want to delete Page ${pageIdx + 1}? all data on this page will be lost.`)) {
+                // Remove 6 slots starting at the page offset
+                dataStore.splice(pageIdx * 6, 6);
+                
+                // Adjust active index if it was on the deleted page or beyond
+                if (activeIdx >= pageIdx * 6 && activeIdx < (pageIdx + 1) * 6) {
+                    activeIdx = Math.max(0, (pageIdx - 1) * 6);
+                } else if (activeIdx >= (pageIdx + 1) * 6) {
+                    activeIdx -= 6;
+                }
+                
+                refreshEditor();
+                refreshPreview();
+            }
+        };
+
         function scalePages() {
             const wrappers = document.querySelectorAll('.a4-wrapper');
             wrappers.forEach(wrapper => {
@@ -289,9 +310,10 @@
                 const page = wrapper.querySelector('.a4-page');
                 if (page) page.style.transform = `scale(${scale})`;
             });
-            // Show preview only after scaling is complete
             ui.scrollArea.style.opacity = '1';
         }
+        
+        window.addEventListener('resize', scalePages);
 
         function refreshEditor() {
             const item = dataStore[activeIdx];
@@ -366,11 +388,28 @@
                         </div>
                     `;
                 }
-                fullHtml += `<div class="w-full flex flex-col items-center group relative"><div class="a4-wrapper"><div class="a4-page" id="page-${p}">${pageSlotsHtml}</div></div></div>`;
+
+                const removeBtnHtml = totalPages > 1 ? `
+                    <button onclick="event.stopPropagation(); removePage(${p})" class="ml-auto flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 rounded border border-rose-100 transition-colors">
+                        <i data-lucide="trash-2" size="12"></i>
+                        <span>Remove Page</span>
+                    </button>
+                ` : '';
+
+                fullHtml += `
+                    <div class="w-full flex flex-col items-center group relative">
+                        <div class="w-full max-w-[794px] mb-2 flex items-center px-1">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-widest">Page ${p + 1}</span>
+                            ${removeBtnHtml}
+                        </div>
+                        <div class="a4-wrapper">
+                            <div class="a4-page" id="page-${p}">${pageSlotsHtml}</div>
+                        </div>
+                    </div>
+                `;
             }
 
             ui.grid.innerHTML = fullHtml;
-            // Important: Use requestAnimationFrame to ensure the DOM has updated before scaling
             requestAnimationFrame(scalePages);
             lucide.createIcons();
         }
@@ -403,7 +442,7 @@
         };
 
         document.getElementById('clearBtn').onclick = () => {
-            if(confirm("Erase all data and reset?")) { dataStore = []; activeIdx = 0; addNewPage(true); }
+            if(confirm("Erase all data and reset to a single empty page?")) { dataStore = []; activeIdx = 0; addNewPage(true); }
         };
 
         async function buildPDF() {
@@ -466,10 +505,7 @@
         }
         document.getElementById('downloadBtn').onclick = buildPDF;
 
-        // Final Scale adjustment
-        window.addEventListener('resize', scalePages);
-
-        // Immediate logic trigger
+        // Optimized Start-up
         (function init() {
             initStylingControls();
             addNewPage(false);
