@@ -80,6 +80,18 @@
 </head>
 <body class="p-4 md:p-6 lg:p-8">
 
+    <!-- Custom Modal UI -->
+    <div id="customModalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-[#37352F]/40 backdrop-blur-[2px] transition-opacity">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 border border-[#E9E9E7]">
+            <h3 id="modalTitle" class="text-lg font-bold text-[#37352F] mb-2">Alert</h3>
+            <p id="modalMessage" class="text-sm text-[#37352F] mb-6">Message goes here.</p>
+            <div class="flex justify-end gap-3">
+                <button id="modalCancelBtn" class="px-4 py-2 text-sm font-medium text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F7F7F5] rounded transition-colors">Cancel</button>
+                <button id="modalConfirmBtn" class="px-4 py-2 text-sm font-medium bg-[#2F3437] text-white hover:bg-[#191919] rounded shadow-sm transition-colors">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-[1300px] mx-auto">
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 bg-white p-4 md:px-6 rounded-lg border border-[#E9E9E7] shadow-sm">
             <div class="flex items-center gap-3">
@@ -136,20 +148,28 @@
                         <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Text Size:</span>
-                                <select id="textSizeSelect" onchange="changeTextSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="8">Small</option>
-                                    <option value="10" selected>Normal</option>
-                                    <option value="12">Large</option>
-                                    <option value="14">Huge</option>
-                                </select>
+                                <div class="flex items-center gap-1">
+                                    <select id="textSizeSelect" onchange="handleTextSizeChange(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                        <option value="8">Small</option>
+                                        <option value="10" selected>Normal</option>
+                                        <option value="12">Large</option>
+                                        <option value="14">Huge</option>
+                                        <option value="custom">Custom...</option>
+                                    </select>
+                                    <input type="number" id="customTextSize" onchange="handleCustomTextSize(this.value)" oninput="handleCustomTextSize(this.value)" class="hidden w-14 text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none" placeholder="px" min="1" max="100">
+                                </div>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Image Size:</span>
-                                <select id="imgSizeSelect" onchange="changeImgSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="50">Small</option>
-                                    <option value="75" selected>Normal</option>
-                                    <option value="100">Large</option>
-                                </select>
+                                <div class="flex items-center gap-1">
+                                    <select id="imgSizeSelect" onchange="handleImgSizeChange(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                        <option value="50">Small</option>
+                                        <option value="75" selected>Normal</option>
+                                        <option value="100">Large</option>
+                                        <option value="custom">Custom...</option>
+                                    </select>
+                                    <input type="number" id="customImgSize" onchange="handleCustomImgSize(this.value)" oninput="handleCustomImgSize(this.value)" class="hidden w-14 text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none" placeholder="%" min="10" max="100">
+                                </div>
                             </div>
                         </div>
 
@@ -253,6 +273,32 @@
         };
 
         const dummyDoc = new jsPDF('p', 'mm', 'a4');
+
+        const customModal = {
+            show: function(title, msg, isConfirm, onConfirm) {
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalMessage').textContent = msg;
+                const overlay = document.getElementById('customModalOverlay');
+                const cancelBtn = document.getElementById('modalCancelBtn');
+                const confirmBtn = document.getElementById('modalConfirmBtn');
+                
+                overlay.classList.remove('hidden');
+                
+                if (!isConfirm) {
+                    cancelBtn.classList.add('hidden');
+                    confirmBtn.textContent = 'OK';
+                    confirmBtn.onclick = () => overlay.classList.add('hidden');
+                } else {
+                    cancelBtn.classList.remove('hidden');
+                    confirmBtn.textContent = 'Confirm';
+                    cancelBtn.onclick = () => overlay.classList.add('hidden');
+                    confirmBtn.onclick = () => {
+                        overlay.classList.add('hidden');
+                        if (onConfirm) onConfirm();
+                    };
+                }
+            }
+        };
 
         function toggleAutoFit() {
             isAutoFit = !isAutoFit;
@@ -379,8 +425,48 @@
 
         function changeTheme(key) { activeTheme = key; initStylingControls(); refreshAll(); }
         function changeFont(key) { activeFont = key; refreshAll(); }
-        function changeTextSize(val) { activeFontSize = parseInt(val); refreshAll(); }
-        function changeImgSize(val) { activeImgSize = parseInt(val); refreshAll(); }
+        
+        function handleTextSizeChange(val) {
+            const customInput = document.getElementById('customTextSize');
+            if (val === 'custom') {
+                customInput.classList.remove('hidden');
+                customInput.value = activeFontSize;
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+                activeFontSize = parseInt(val);
+                refreshAll();
+            }
+        }
+
+        function handleCustomTextSize(val) {
+            let parsed = parseInt(val);
+            if (parsed > 0) {
+                activeFontSize = parsed;
+                refreshAll();
+            }
+        }
+
+        function handleImgSizeChange(val) {
+            const customInput = document.getElementById('customImgSize');
+            if (val === 'custom') {
+                customInput.classList.remove('hidden');
+                customInput.value = activeImgSize;
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+                activeImgSize = parseInt(val);
+                refreshAll();
+            }
+        }
+
+        function handleCustomImgSize(val) {
+            let parsed = parseInt(val);
+            if (parsed > 0) {
+                activeImgSize = parsed;
+                refreshAll();
+            }
+        }
 
         function changeGrid(val) {
             slotsPerPage = parseInt(val);
@@ -410,13 +496,16 @@
         }
 
         function removePage(pIdx) {
-            if (isAutoFit) { alert("Switch off Auto-Fit to easily delete specific pages."); return; }
+            if (isAutoFit) { 
+                customModal.show("Auto-Fit Mode", "Switch off Auto-Fit to easily delete specific pages.", false); 
+                return; 
+            }
             if (dataStore.length <= slotsPerPage) return;
-            if (confirm("Delete this page and all its content?")) {
+            customModal.show("Delete Page", "Delete this page and all its content?", true, () => {
                 dataStore.splice(pIdx * slotsPerPage, slotsPerPage);
                 activeIdx = 0;
                 refreshAll();
-            }
+            });
         }
 
         function nextSlot() {
@@ -839,7 +928,8 @@
 
                 doc.save(`Medical_Summary_${Date.now()}.pdf`);
             } catch (error) {
-                console.error(error); alert("Export Error. Please try again.");
+                console.error(error); 
+                customModal.show("Export Error", "Export Error. Please try again.", false);
             } finally {
                 btn.disabled = false; btn.innerHTML = original; lucide.createIcons();
             }
@@ -847,7 +937,9 @@
 
         document.getElementById('downloadBtn').onclick = buildPDF;
         document.getElementById('clearBtn').onclick = () => {
-            if(confirm("Erase all data and start over?")) { dataStore = []; activeIdx = 0; addNewPage(true); }
+            customModal.show("Clear All", "Erase all data and start over?", true, () => {
+                dataStore = []; activeIdx = 0; addNewPage(true); 
+            });
         };
 
         window.addEventListener('resize', scalePages);
@@ -859,4 +951,6 @@
     </script>
 </body>
 </html>
+
+
 
