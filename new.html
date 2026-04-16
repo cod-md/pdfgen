@@ -60,6 +60,11 @@
             transform-origin: top left;
         }
         
+        /* Auto Fit uses relative container instead of grid */
+        .a4-page.auto-fit-mode {
+            display: block; 
+        }
+
         .active-cell::after {
             content: '';
             position: absolute;
@@ -110,63 +115,49 @@
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount"></span>
                     </div>
 
-                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-col gap-y-4">
-                        
-                        <!-- Row 1: Aesthetics -->
-                        <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Theme:</span>
-                                <div class="flex gap-1.5" id="colorSwatches"></div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Font:</span>
-                                <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="sans">Modern</option>
-                                    <option value="serif">Classic</option>
-                                    <option value="mono">Typewriter</option>
-                                </select>
-                            </div>
+                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-8 gap-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Theme:</span>
+                            <div class="flex gap-1.5" id="colorSwatches"></div>
                         </div>
-
-                        <!-- Row 2: Manual Content Sizing -->
-                        <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Text Size:</span>
-                                <select id="textSizeSelect" onchange="changeTextSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="8">Small</option>
-                                    <option value="10" selected>Normal</option>
-                                    <option value="12">Large</option>
-                                    <option value="14">Huge</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Image Size:</span>
-                                <select id="imgSizeSelect" onchange="changeImgSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="60">Small</option>
-                                    <option value="100" selected>Normal</option>
-                                    <option value="150">Large</option>
-                                </select>
-                            </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Font:</span>
+                            <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                <option value="sans">Modern</option>
+                                <option value="serif">Classic</option>
+                                <option value="mono">Typewriter</option>
+                            </select>
                         </div>
-
-                        <!-- Row 3: Layout & Auto Fit -->
-                        <div class="flex flex-wrap items-center gap-4 pt-2 border-t border-[#F7F7F5]">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Text Size:</span>
+                            <select id="textSizeSelect" onchange="changeTextSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                <option value="8">Small</option>
+                                <option value="10" selected>Normal</option>
+                                <option value="12">Large</option>
+                                <option value="14">Huge</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Image Max Size:</span>
+                            <select id="imgSizeSelect" onchange="changeImgSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                <option value="60">Small</option>
+                                <option value="100" selected>Normal</option>
+                                <option value="150">Large</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-4 w-full pt-2 border-t border-[#E9E9E7]">
                             <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Grid:</span>
+                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Grid Columns:</span>
                                 <select id="gridSelect" onchange="changeGrid(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="1">1 Slot</option>
-                                    <option value="2">2 Slots</option>
-                                    <option value="3">3 Slots</option>
-                                    <option value="4">4 Slots</option>
-                                    <option value="6" selected>6 Slots</option>
-                                    <option value="8">8 Slots</option>
-                                    <option value="9">9 Slots</option>
+                                    <option value="1">1 Col</option>
+                                    <option value="2" selected>2 Cols</option>
+                                    <option value="3">3 Cols</option>
                                 </select>
                             </div>
                             
                             <button id="autoFitBtn" onclick="toggleAutoFit()" class="flex items-center gap-1.5 text-xs font-bold border border-[#E9E9E7] rounded px-3 py-1 bg-white text-[#37352F] hover:bg-[#F9F9F8] transition-colors shadow-sm">
                                 <i data-lucide="maximize" size="14"></i>
-                                Auto-Fit Content
+                                Auto-Fit (Independent Cells)
                             </button>
                         </div>
                     </div>
@@ -218,13 +209,14 @@
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
         let dataStore = [];
-        let slotsPerPage = 6;
+        let colsPerPage = 2; // Default Grid columns
+        let slotsPerPage = 6; // Standard mode default slots per page
+        
         let activeTheme = 'pink';
         let activeFont = 'sans';
-        let isAutoFit = false;
-        
         let activeFontSize = 10;
-        let activeImgSize = 100; // Max height limit for images in mm
+        let activeImgSize = 100;
+        let isAutoFit = false;
 
         const themes = {
             pink:   { bg: '#FBE4E4', border: '#F5E6E6', rgb: [251, 228, 228] },
@@ -253,117 +245,112 @@
         function toggleAutoFit() {
             isAutoFit = !isAutoFit;
             const btn = document.getElementById('autoFitBtn');
-            const gridSelect = document.getElementById('gridSelect');
-            
             if (isAutoFit) {
                 btn.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
-                btn.classList.remove('bg-white', 'text-[#37352F]', 'border-[#E9E9E7]');
-                gridSelect.disabled = true; gridSelect.style.opacity = '0.5';
+                btn.classList.remove('bg-white', 'text-[#37352F]');
             } else {
                 btn.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-200');
-                btn.classList.add('bg-white', 'text-[#37352F]', 'border-[#E9E9E7]');
-                gridSelect.disabled = false; gridSelect.style.opacity = '1';
+                btn.classList.add('bg-white', 'text-[#37352F]');
             }
             refreshAll();
         }
 
-        function calculateDynamicLayout() {
+        // --- NEW INDEPENDENT COLUMNS ALGORITHM (MASONRY) ---
+        function calculateIndependentLayout() {
             const pages = [];
-            let currentPage = [];
-            let currentY = 0;
+            let currentPageSlots = [];
             const pW = 210, pH = 297, pad = 8;
-            const { cols } = getGridLayout(slotsPerPage);
-            const cW = pW / cols;
-            
+            const cW = pW / colsPerPage;
+            let colY = new Array(colsPerPage).fill(0);
+
             dummyDoc.setFont(fonts[activeFont].jspdf, "bold");
             dummyDoc.setFontSize(activeFontSize);
 
-            for (let i = 0; i < dataStore.length; i += cols) {
-                const rowSlots = [];
-                for (let j = 0; j < cols; j++) {
-                    if (i + j < dataStore.length) {
-                        rowSlots.push(dataStore[i + j]);
-                    } else {
-                        rowSlots.push(null);
-                    }
+            let rowWillOverflow = false;
+            let tempRowSlots = [];
+
+            for (let i = 0; i < dataStore.length; i++) {
+                const s = dataStore[i];
+                const colIdx = i % colsPerPage;
+                
+                let reqH = pad * 2; 
+                let hasContent = false;
+
+                // 1. Calculate height of images
+                if (s.images.length > 0) {
+                    let imgCols = s.images.length === 1 ? 1 : 2;
+                    let availW = cW - (pad * 2);
+                    let gap = 3;
+                    let iW = (availW - (imgCols - 1) * gap) / imgCols;
+                    let maxImgH = 0;
+                    s.images.forEach(src => {
+                        try {
+                            const props = dummyDoc.getImageProperties(src);
+                            const ratio = props.height / props.width;
+                            let fH = iW * ratio;
+                            if (fH > maxImgH) maxImgH = fH;
+                        } catch(e) {}
+                    });
+                    if (maxImgH > activeImgSize) maxImgH = activeImgSize; 
+                    let rows = Math.ceil(s.images.length / imgCols);
+                    reqH += (maxImgH * rows) + (rows - 1)*gap;
+                    hasContent = true;
                 }
 
-                let maxReqH = 0;
-                rowSlots.forEach(s => {
-                    if (!s) return;
-                    let h = pad * 2; 
-                    let hasContent = false;
-
-                    // 1. Image requirements
-                    if (s.images.length > 0) {
-                        let imgCols = s.images.length === 1 ? 1 : 2;
-                        let availW = cW - (pad * 2);
-                        let gap = 3;
-                        let iW = (availW - (imgCols - 1) * gap) / imgCols;
-                        let maxImgH = 0;
-                        s.images.forEach(src => {
-                            try {
-                                const props = dummyDoc.getImageProperties(src);
-                                const ratio = props.height / props.width;
-                                let fH = iW * ratio;
-                                if (fH > maxImgH) maxImgH = fH;
-                            } catch(e) {}
-                        });
-                        
-                        if (maxImgH > activeImgSize) maxImgH = activeImgSize; 
-                        
-                        let rows = Math.ceil(s.images.length / imgCols);
-                        h += (maxImgH * rows) + (rows - 1)*gap;
-                        hasContent = true;
-                    }
-
-                    // 2. Questions requirements
-                    if (s.questions) {
-                        if (hasContent) h += activeFontSize * 0.5; // Gap exactly equal to 1 line
-                        let qLines = dummyDoc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
-                        h += (qLines.length * activeFontSize * 0.45); 
-                        hasContent = true;
-                    }
-
-                    // 3. Answers requirements
-                    if (s.answers) {
-                        if (s.questions) h += activeFontSize * 0.2; // Small gap
-                        else if (hasContent) h += activeFontSize * 0.5; // Gap equal to 1 line if no questions
-                        
-                        let aLines = dummyDoc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
-                        h += (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6); 
-                        hasContent = true;
-                    }
-
-                    if (!hasContent) h += 40; 
-                    if (h > maxReqH) maxReqH = h;
-                });
-
-                // Auto Fit shrinks row closely to content, overriding strict Grid heights
-                let rowH = maxReqH; 
-                if (rowH > pH - 16) rowH = pH - 16; // Just prevent it from overflowing the physical page max
-
-                if (currentY + rowH > pH && currentPage.length > 0) {
-                    pages.push(currentPage);
-                    currentPage = [];
-                    currentY = 0;
+                // 2. Add Exactly 1 Line Gap between Image and Text
+                if (hasContent && (s.questions || s.answers)) {
+                    reqH += activeFontSize * 0.35; // 0.35mm per pt represents ~1 line spacing
                 }
 
-                currentPage.push({ slots: rowSlots, rowH, y: currentY, rowIdx: currentPage.length });
-                currentY += rowH;
+                // 3. Questions
+                if (s.questions) {
+                    let qLines = dummyDoc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
+                    reqH += (qLines.length * activeFontSize * 0.45); 
+                    hasContent = true;
+                }
+
+                // Small gap between Q and A
+                if (s.questions && s.answers) reqH += activeFontSize * 0.2;
+
+                // 4. Answers
+                if (s.answers) {
+                    let aLines = dummyDoc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
+                    reqH += (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6); 
+                    hasContent = true;
+                }
+
+                if (!hasContent) reqH += 40; 
+                if (reqH > pH - 16) reqH = pH - 16; 
+
+                // Store slot info temporarily
+                tempRowSlots.push({ data: s, reqH: reqH, colIdx: colIdx, originalIdx: i });
+
+                // Check for Page Overflow
+                if (colY[colIdx] + reqH > pH) rowWillOverflow = true;
+
+                // When a full row is evaluated (or end of data)
+                if (colIdx === colsPerPage - 1 || i === dataStore.length - 1) {
+                    if (rowWillOverflow && currentPageSlots.length > 0) {
+                        pages.push(currentPageSlots);
+                        currentPageSlots = [];
+                        colY = new Array(colsPerPage).fill(0);
+                    }
+                    
+                    // Assign actual Y positions independently
+                    tempRowSlots.forEach(slot => {
+                        slot.y = colY[slot.colIdx];
+                        slot.x = slot.colIdx * cW;
+                        slot.w = cW;
+                        colY[slot.colIdx] += slot.reqH;
+                        currentPageSlots.push(slot);
+                    });
+
+                    tempRowSlots = [];
+                    rowWillOverflow = false;
+                }
             }
-            if (currentPage.length > 0) pages.push(currentPage);
+            if (currentPageSlots.length > 0) pages.push(currentPageSlots);
             return pages;
-        }
-
-        function getGridLayout(slots) {
-            let cols = 1, rows = 1;
-            if (slots === 4) { cols = 2; rows = 2; }
-            else if (slots === 6) { cols = 2; rows = 3; }
-            else if (slots === 8) { cols = 2; rows = 4; }
-            else if (slots === 9) { cols = 3; rows = 3; }
-            else if (slots > 1) { cols = 1; rows = slots; }
-            return { cols, rows };
         }
 
         function saveText() {
@@ -378,11 +365,13 @@
         function changeImgSize(val) { activeImgSize = parseInt(val); refreshAll(); }
 
         function changeGrid(val) {
-            slotsPerPage = parseInt(val);
+            colsPerPage = parseInt(val);
+            slotsPerPage = colsPerPage * 3; // Default strict rows = 3
+            
             const totalItems = dataStore.length;
-            const remainder = totalItems % slotsPerPage;
+            const remainder = totalItems % colsPerPage;
             if (remainder !== 0) {
-                const needed = slotsPerPage - remainder;
+                const needed = colsPerPage - remainder;
                 for (let i = 0; i < needed; i++) {
                     dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
                 }
@@ -392,7 +381,7 @@
         }
 
         function addNewPage(shouldRefresh = true) {
-            let addCount = isAutoFit ? 2 : slotsPerPage;
+            let addCount = isAutoFit ? colsPerPage : slotsPerPage;
             for(let i = 0; i < addCount; i++) {
                 dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
             }
@@ -404,9 +393,9 @@
         }
 
         function removePage(pIdx) {
-            if (dataStore.length <= slotsPerPage && !isAutoFit) return;
+            if (isAutoFit) { alert("Switch off Auto-Fit to easily delete specific pages."); return; }
+            if (dataStore.length <= slotsPerPage) return;
             if (confirm("Delete this page and all its content?")) {
-                if(isAutoFit) { alert("Switch off Auto-Fit to easily delete specific pages."); return; }
                 dataStore.splice(pIdx * slotsPerPage, slotsPerPage);
                 activeIdx = 0;
                 refreshAll();
@@ -454,62 +443,12 @@
             ui.scrollArea.style.opacity = '1';
         }
 
-        function buildSlotHtml(s, globalIdx, borderStyle, cols = 1) {
-            if (!s) return `<div style="width: ${100/cols}%; box-sizing: border-box; ${borderStyle}"></div>`;
-            
-            let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
-            let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
-
-            // Using flex limits to simulate max image size in preview accurately
-            const imgPctLimit = Math.min((activeImgSize / 297) * 100, 50);
-
-            let imgHtml = '';
-            if (s.images.length > 0) {
-                let iCols = s.images.length === 1 ? 1 : 2;
-                if (isAutoFit) {
-                    // Top-Down rigid gap alignment for Auto Fit
-                    imgHtml = `<div style="width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: ${activeFontSize * 1.9}px;">`;
-                    s.images.forEach(img => imgHtml += `<div style="width: 100%; display: flex; justify-content: center;"><img src="${img}" style="max-width: 100%; max-height: ${activeImgSize * 3.78}px; object-fit: contain;" /></div>`);
-                    imgHtml += `</div>`;
-                } else {
-                    // Centered elastic bounds for Strict Grid
-                    imgHtml = `<div style="flex: 1; max-height: ${imgPctLimit}%; width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; min-height: 0;">`;
-                    s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></div>`);
-                    imgHtml += `</div>`;
-                }
-            } else {
-                if (isAutoFit) {
-                    imgHtml = `<div style="width: 100%; display: flex; justify-content: center; margin-bottom: 12px;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
-                } else {
-                    imgHtml = `<div style="flex: 1; display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
-                }
-            }
-
-            const escQ = !s.questions ? '' : s.questions.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const escA = !s.answers ? '' : s.answers.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-            const fsPx = activeFontSize * 1.4;
-            
-            // Auto Fit top-aligns, Strict Grid anchors to bottom
-            const textContainerStyle = isAutoFit 
-                ? `display: flex; flex-direction: column; width: 100%;` 
-                : `margin-top: auto; display: flex; flex-direction: column; width: 100%;`;
-
-            return `
-                <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="width: ${100/cols}%; ${borderStyle} padding: 24px; box-sizing: border-box;">
-                    ${imgHtml}
-                    <div style="${textContainerStyle}">
-                        ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: 8px; word-break: break-word;">${escQ}</div>` : ''}
-                        ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px; word-break: break-word;">${escA}</div>` : ''}
-                    </div>
-                </div>
-            `;
-        }
+        function escapeHtml(t) { return !t ? '' : t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
         function refreshAll() {
             const item = dataStore[activeIdx];
             document.getElementById('pageLabel').textContent = Math.floor(activeIdx / slotsPerPage) + 1;
-            document.getElementById('slotLabel').textContent = (activeIdx % slotsPerPage) + 1;
+            document.getElementById('slotLabel').textContent = activeIdx + 1;
             document.getElementById('totalSlotsCount').textContent = `Total: ${dataStore.length} slots`;
             
             ui.q.style.fontFamily = fonts[activeFont].css;
@@ -536,44 +475,71 @@
             }
 
             let fullHtml = '';
-            const { cols, rows } = getGridLayout(slotsPerPage);
-
+            
             if (isAutoFit) {
-                // RENDER AUTO-FIT HTML
-                const pages = calculateDynamicLayout();
-                pages.forEach((pageRows, p) => {
+                // --- RENDER MASONRY AUTO-FIT HTML ---
+                const pages = calculateIndependentLayout();
+                
+                pages.forEach((pageSlots, p) => {
                     let pageSlotsHtml = '';
-                    pageRows.forEach(row => {
-                        const heightPct = (row.rowH / 297) * 100;
-                        let btmBorder = row.rowIdx < pageRows.length - 1 ? 'border-bottom: 2px solid #E9E9E7;' : '';
-                        let rowHtml = `<div style="display: flex; width: 100%; height: ${heightPct}%; ${btmBorder} box-sizing: border-box;">`;
-                        
-                        row.slots.forEach((s, colIdx) => {
-                            const globalIdx = dataStore.indexOf(s);
-                            let b1 = 'box-sizing: border-box; ';
-                            if (colIdx < row.slots.length - 1) b1 += 'border-right: 2px solid #E9E9E7; ';
-                            rowHtml += buildSlotHtml(s, globalIdx, b1, cols);
-                        });
-                        rowHtml += `</div>`;
-                        pageSlotsHtml += rowHtml;
-                    });
                     
+                    pageSlots.forEach(slot => {
+                        const s = slot.data;
+                        const globalIdx = slot.originalIdx;
+                        let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
+                        let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
+                        
+                        // Absolute positioning mapped accurately from mm to percentage
+                        let t = (slot.y / 297) * 100;
+                        let l = (slot.x / 210) * 100;
+                        let w = (slot.w / 210) * 100;
+                        let h = (slot.reqH / 297) * 100;
+                        
+                        let borderStyle = 'border-bottom: 2px solid #E9E9E7; ';
+                        if (slot.colIdx < colsPerPage - 1) borderStyle += 'border-right: 2px solid #E9E9E7; ';
+                        
+                        let imgHtml = '';
+                        if (s.images.length > 0) {
+                            let iCols = s.images.length === 1 ? 1 : 2;
+                            // 1.4 multiplier transforms PDF font scale closely to HTML rems
+                            let gapMargin = activeFontSize * 1.4; 
+                            imgHtml = `<div style="width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: ${gapMargin}px;">`;
+                            s.images.forEach(img => imgHtml += `<div style="width: 100%; display: flex; justify-content: center;"><img src="${img}" style="max-width: 100%; max-height: ${activeImgSize * 3.78}px; object-fit: contain;" /></div>`);
+                            imgHtml += `</div>`;
+                        } else {
+                            imgHtml = `<div style="width: 100%; display: flex; justify-content: center; margin-bottom: 12px;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
+                        }
+                        
+                        const fsPx = activeFontSize * 1.4;
+                        
+                        pageSlotsHtml += `
+                            <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="absolute flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="left: ${l}%; top: ${t}%; width: ${w}%; height: ${h}%; padding: 24px; box-sizing: border-box; ${borderStyle}">
+                                ${imgHtml}
+                                <div style="display: flex; flex-direction: column; width: 100%;">
+                                    ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: 8px; word-break: break-word;">${escapeHtml(s.questions)}</div>` : ''}
+                                    ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px; word-break: break-word;">${escapeHtml(s.answers)}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+
                     fullHtml += `
                         <div class="w-full flex flex-col items-center">
                             <div class="w-full max-w-[794px] mb-2 flex justify-between items-center px-1">
                                 <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-widest">Page ${p + 1}</span>
                             </div>
-                            <div class="a4-wrapper"><div class="a4-page flex flex-col" id="page-${p}">${pageSlotsHtml}</div></div>
+                            <div class="a4-wrapper"><div class="a4-page auto-fit-mode" id="page-${p}">${pageSlotsHtml}</div></div>
                         </div>`;
                 });
-
+                
             } else {
-                // RENDER STRICT GRID HTML
+                // --- RENDER STRICT GRID HTML ---
+                const rows = slotsPerPage / colsPerPage;
                 const totalPages = Math.ceil(dataStore.length / slotsPerPage);
 
                 for (let p = 0; p < totalPages; p++) {
                     let pageSlotsHtml = '';
-                    let gridStyle = `display: grid; grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`;
+                    let gridStyle = `display: grid; grid-template-columns: repeat(${colsPerPage}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`;
 
                     for (let i = 0; i < slotsPerPage; i++) {
                         const globalIdx = (p * slotsPerPage) + i;
@@ -581,12 +547,33 @@
                         const s = dataStore[globalIdx];
                         
                         let border = 'border-color: #E9E9E7; border-style: solid; border-width: 0;';
-                        if (cols > 1 && (i % cols === 0)) border += ' border-right-width: 2px;';
-                        if (rows > 1 && i < (slotsPerPage - cols)) border += ' border-bottom-width: 2px;';
-                        if (cols === 2 && i % 2 === 0) border += ' border-right-width: 2px;';
-                        else if (cols === 2) border += ' border-right-width: 0;';
+                        if (colsPerPage > 1 && (i % colsPerPage === 0)) border += ' border-right-width: 2px;';
+                        if (rows > 1 && i < (slotsPerPage - colsPerPage)) border += ' border-bottom-width: 2px;';
 
-                        pageSlotsHtml += buildSlotHtml(s, globalIdx, border, cols);
+                        let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
+                        let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
+
+                        let imgHtml = '';
+                        if (s.images.length > 0) {
+                            let iCols = s.images.length === 1 ? 1 : 2;
+                            imgHtml = `<div style="flex: 1; width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; min-height: 0;">`;
+                            s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></div>`);
+                            imgHtml += `</div>`;
+                        } else {
+                            imgHtml = `<div style="flex: 1; display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
+                        }
+
+                        const fsPx = activeFontSize * 1.4;
+
+                        pageSlotsHtml += `
+                            <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="width: 100%; ${border} padding: 24px; box-sizing: border-box;">
+                                ${imgHtml}
+                                <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%;">
+                                    ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: 8px; word-break: break-word;">${escapeHtml(s.questions)}</div>` : ''}
+                                    ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px; word-break: break-word;">${escapeHtml(s.answers)}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
                     }
 
                     fullHtml += `
@@ -605,7 +592,7 @@
             requestAnimationFrame(scalePages);
             
             const isLast = activeIdx === dataStore.length - 1;
-            ui.next.innerHTML = `<span>${isLast ? 'Save & Add Page' : 'Save & Next Slot'}</span> <i data-lucide="${isLast ? 'file-plus' : 'arrow-right'}" size="16"></i>`;
+            ui.next.innerHTML = `<span>${isLast ? 'Save & Add Slot' : 'Save & Next Slot'}</span> <i data-lucide="${isLast ? 'file-plus' : 'arrow-right'}" size="16"></i>`;
             lucide.createIcons();
         }
 
@@ -625,166 +612,162 @@
                 const doc = new jsPDF('p', 'mm', 'a4');
                 const pW = 210, pH = 297, pad = 8;
                 
-                const { cols, rows } = getGridLayout(slotsPerPage);
                 const rgb = themes[activeTheme].rgb, fName = fonts[activeFont].jspdf;
 
-                const drawStrictSlot = (s, x, y, cW, cH) => {
-                    if (!s) return;
-                    let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
-                    doc.setFont(fName, "bold");
-                    doc.setFontSize(activeFontSize);
-                    
-                    if (s.answers) {
-                        aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6); 
-                        aBoxH = (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6); 
-                        aBoxY = y + cH - pad - aBoxH; 
-                        
-                        doc.setFillColor(rgb[0], rgb[1], rgb[2]); 
-                        doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
-                        
-                        doc.setTextColor(55, 53, 47); 
-                        doc.text(aLines, x + pad + 3, aBoxY + (activeFontSize * 0.55));
-                    }
-
-                    let qH = 0, qY = aBoxY, qLines = [];
-                    if (s.questions) {
-                        qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
-                        qH = qLines.length * activeFontSize * 0.45; 
-                        qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
-                        
-                        doc.setTextColor(55, 53, 47); 
-                        doc.text(qLines, x + pad + 3, qY + (activeFontSize * 0.35)); 
-                    }
-
-                    if (s.images.length > 0) {
-                        let totalAvailH = qY - y - pad - 2;
-                        let imgBlockH = Math.min(totalAvailH, activeImgSize);
-                        let yOffset = Math.max(0, (totalAvailH - imgBlockH) / 2); 
-                        
-                        let availW = cW - (pad * 2);
-                        let imgCols = s.images.length === 1 ? 1 : 2;
-                        let imgRows = Math.ceil(s.images.length / imgCols);
-                        let gap = 3;
-                        let iW = (availW - (imgCols - 1)*gap) / imgCols;
-                        let iH = (imgBlockH - (imgRows - 1)*gap) / imgRows;
-
-                        s.images.forEach((src, idx) => {
-                            try {
-                                const props = doc.getImageProperties(src);
-                                const ratio = props.height / props.width;
-                                let fW = iW, fH = fW * ratio;
-                                if (fH > iH) { fH = iH; fW = fH / ratio; }
-                                const cx = x + pad + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
-                                const cy = y + pad + yOffset + Math.floor(idx / imgCols) * (iH + gap) + (iH - fH) / 2;
-                                doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
-                            } catch(e) {}
-                        });
-                    }
-                };
-
-                const drawAutoFitSlot = (s, x, y, cW, cH) => {
-                    if (!s) return;
-                    let currentY = y + pad;
-                    
-                    if (s.images.length > 0) {
-                        let imgCols = s.images.length === 1 ? 1 : 2;
-                        let imgRows = Math.ceil(s.images.length / imgCols);
-                        let gap = 3;
-                        let availW = cW - (pad * 2);
-                        let iW = (availW - (imgCols - 1)*gap) / imgCols;
-                        
-                        let maxImgH = 0;
-                        s.images.forEach(src => {
-                            try {
-                                const props = doc.getImageProperties(src);
-                                const ratio = props.height / props.width;
-                                let fH = iW * ratio;
-                                if (fH > maxImgH) maxImgH = fH;
-                            } catch(e) {}
-                        });
-                        if (maxImgH > activeImgSize) maxImgH = activeImgSize;
-                        
-                        s.images.forEach((src, idx) => {
-                            try {
-                                const props = doc.getImageProperties(src);
-                                const ratio = props.height / props.width;
-                                let fW = iW, fH = fW * ratio;
-                                if (fH > maxImgH) { fH = maxImgH; fW = fH / ratio; }
-                                const cx = x + pad + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
-                                const cy = currentY + Math.floor(idx / imgCols) * (maxImgH + gap) + (maxImgH - fH) / 2;
-                                doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
-                            } catch(e) {}
-                        });
-                        currentY += (maxImgH * imgRows) + (imgRows - 1)*gap;
-                    }
-
-                    if (s.images.length > 0 && (s.questions || s.answers)) {
-                        currentY += activeFontSize * 0.5; // Gap exactly equal to 1 line space
-                    }
-
-                    doc.setFont(fName, "bold");
-                    doc.setFontSize(activeFontSize);
-
-                    if (s.questions) {
-                        let qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
-                        doc.setTextColor(55, 53, 47);
-                        doc.text(qLines, x + pad + 3, currentY + (activeFontSize * 0.35));
-                        currentY += (qLines.length * activeFontSize * 0.45);
-                    }
-
-                    if (s.questions && s.answers) {
-                        currentY += activeFontSize * 0.2;
-                    }
-
-                    if (s.answers) {
-                        let aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
-                        let aBoxH = (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6);
-                        doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-                        doc.rect(x + pad, currentY, cW - (pad * 2), aBoxH, 'F');
-                        doc.setTextColor(55, 53, 47);
-                        doc.text(aLines, x + pad + 3, currentY + (activeFontSize * 0.55));
-                    }
-                };
-
                 if (isAutoFit) {
-                    // PDF RENDER: AUTO FIT
-                    const pages = calculateDynamicLayout();
-                    const cW = pW / cols;
+                    // PDF RENDER: MASONRY AUTO FIT
+                    const pages = calculateIndependentLayout();
+                    const cW = pW / colsPerPage;
                     
-                    pages.forEach((pageRows, pIdx) => {
+                    pages.forEach((pageSlots, pIdx) => {
                         if (pIdx > 0) doc.addPage();
                         
+                        // Draw full vertical column dividers
                         doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
-                        for(let c=1; c<cols; c++) doc.line(c*cW, 0, c*cW, pH); 
+                        for(let c=1; c<colsPerPage; c++) doc.line(c*cW, 0, c*cW, pH); 
                         
-                        pageRows.forEach(row => {
-                            if (row.rowIdx < pageRows.length - 1) {
-                                doc.line(0, row.y + row.rowH, pW, row.y + row.rowH); 
+                        pageSlots.forEach(slot => {
+                            const s = slot.data;
+                            if (!s) return;
+                            
+                            // Draw bottom horizontal border per independent cell
+                            doc.line(slot.x, slot.y + slot.reqH, slot.x + slot.w, slot.y + slot.reqH);
+
+                            let currentY = slot.y + pad;
+                            
+                            // 1. Draw Images
+                            if (s.images.length > 0) {
+                                let imgCols = s.images.length === 1 ? 1 : 2;
+                                let imgRows = Math.ceil(s.images.length / imgCols);
+                                let gap = 3;
+                                let availW = cW - (pad * 2);
+                                let iW = (availW - (imgCols - 1)*gap) / imgCols;
+                                
+                                let maxImgH = 0;
+                                s.images.forEach(src => {
+                                    try {
+                                        const props = doc.getImageProperties(src);
+                                        const ratio = props.height / props.width;
+                                        let fH = iW * ratio;
+                                        if (fH > maxImgH) maxImgH = fH;
+                                    } catch(e) {}
+                                });
+                                if (maxImgH > activeImgSize) maxImgH = activeImgSize;
+                                
+                                s.images.forEach((src, idx) => {
+                                    try {
+                                        const props = doc.getImageProperties(src);
+                                        const ratio = props.height / props.width;
+                                        let fW = iW, fH = fW * ratio;
+                                        if (fH > maxImgH) { fH = maxImgH; fW = fH / ratio; }
+                                        const cx = slot.x + pad + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
+                                        const cy = currentY + Math.floor(idx / imgCols) * (maxImgH + gap) + (maxImgH - fH) / 2;
+                                        doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
+                                    } catch(e) {}
+                                });
+                                currentY += (maxImgH * imgRows) + (imgRows - 1)*gap;
                             }
-                            row.slots.forEach((s, colIdx) => {
-                                drawAutoFitSlot(s, colIdx * cW, row.y, cW, row.rowH);
-                            });
+
+                            // 2. Exact 1 Line Gap
+                            if (s.images.length > 0 && (s.questions || s.answers)) {
+                                currentY += activeFontSize * 0.35; 
+                            }
+
+                            doc.setFont(fName, "bold");
+                            doc.setFontSize(activeFontSize);
+
+                            // 3. Draw Questions
+                            if (s.questions) {
+                                let qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
+                                doc.setTextColor(55, 53, 47);
+                                doc.text(qLines, slot.x + pad + 3, currentY + (activeFontSize * 0.35));
+                                currentY += (qLines.length * activeFontSize * 0.45);
+                            }
+
+                            if (s.questions && s.answers) {
+                                currentY += activeFontSize * 0.2; // Small gap between Q and A
+                            }
+
+                            // 4. Draw Answers Box
+                            if (s.answers) {
+                                let aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
+                                let aBoxH = (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6);
+                                doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+                                doc.rect(slot.x + pad, currentY, cW - (pad * 2), aBoxH, 'F');
+                                doc.setTextColor(55, 53, 47);
+                                doc.text(aLines, slot.x + pad + 3, currentY + (activeFontSize * 0.55));
+                            }
                         });
                     });
                 } else {
                     // PDF RENDER: STRICT GRID
-                    const cW = pW / cols, cH = pH / rows;
+                    const cW = pW / colsPerPage;
+                    const rows = slotsPerPage / colsPerPage;
+                    const cH = pH / rows;
                     const totalPages = Math.ceil(dataStore.length / slotsPerPage);
 
                     for (let p = 0; p < totalPages; p++) {
                         if (p > 0) doc.addPage();
                         
                         doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
-                        for(let c=1; c<cols; c++) doc.line(c*cW, 0, c*cW, pH);
+                        for(let c=1; c<colsPerPage; c++) doc.line(c*cW, 0, c*cW, pH);
                         for(let r=1; r<rows; r++) doc.line(0, r*cH, pW, r*cH);
 
                         for (let i = 0; i < slotsPerPage; i++) {
                             const globalIdx = (p * slotsPerPage) + i;
                             if (globalIdx >= dataStore.length) continue;
                             const s = dataStore[globalIdx];
-                            const x = (i % cols) * cW, y = Math.floor(i / cols) * cH;
+                            const x = (i % colsPerPage) * cW, y = Math.floor(i / colsPerPage) * cH;
                             
-                            drawStrictSlot(s, x, y, cW, cH);
+                            if (!s) continue;
+                            let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
+                            if (s.answers) {
+                                doc.setFont(fName, "bold");
+                                doc.setFontSize(activeFontSize);
+                                aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6); 
+                                aBoxH = (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6); 
+                                aBoxY = y + cH - pad - aBoxH; 
+                                doc.setFillColor(rgb[0], rgb[1], rgb[2]); 
+                                doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
+                                doc.setTextColor(55, 53, 47); 
+                                doc.text(aLines, x + pad + 3, aBoxY + (activeFontSize * 0.55));
+                            }
+
+                            let qH = 0, qY = aBoxY, qLines = [];
+                            if (s.questions) {
+                                doc.setFont(fName, "bold");
+                                doc.setFontSize(activeFontSize); 
+                                qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
+                                qH = qLines.length * activeFontSize * 0.45; 
+                                qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
+                                doc.setTextColor(55, 53, 47); 
+                                doc.text(qLines, x + pad + 3, qY + (activeFontSize * 0.35)); 
+                            }
+
+                            if (s.images.length > 0) {
+                                let totalAvailH = qY - y - pad - 2;
+                                let imgBlockH = Math.min(totalAvailH, activeImgSize);
+                                let yOffset = Math.max(0, (totalAvailH - imgBlockH) / 2); 
+                                
+                                let availW = cW - (pad * 2);
+                                let imgCols = s.images.length === 1 ? 1 : 2;
+                                let imgRows = Math.ceil(s.images.length / imgCols);
+                                let gap = 3;
+                                let iW = (availW - (imgCols - 1)*gap) / imgCols;
+                                let iH = (imgBlockH - (imgRows - 1)*gap) / imgRows;
+
+                                s.images.forEach((src, idx) => {
+                                    try {
+                                        const props = doc.getImageProperties(src);
+                                        const ratio = props.height / props.width;
+                                        let fW = iW, fH = fW * ratio;
+                                        if (fH > iH) { fH = iH; fW = fH / ratio; }
+                                        const cx = x + pad + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
+                                        const cy = y + pad + yOffset + Math.floor(idx / imgCols) * (iH + gap) + (iH - fH) / 2;
+                                        doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
+                                    } catch(e) {}
+                                });
+                            }
                         }
                     }
                 }
