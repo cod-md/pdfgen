@@ -572,9 +572,7 @@
                             let iCols = s.images.length === 1 ? 1 : 2;
                             let maxH = activeImgSize * 0.45; 
                             
-                            // 1. Removed margin-bottom & flex: 1. Glued structurally to the bottom elements.
                             imgHtml = `<div style="max-height: ${maxH}%; width: ${activeImgSize}%; margin: 0 auto; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; min-height: 0;">`;
-                            // 2. Added display: block to img
                             s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" /></div>`);
                             imgHtml += `</div>`;
                         } else {
@@ -585,7 +583,7 @@
                         let gapHtml = (s.images.length > 0 && (s.questions || s.answers)) ? `<div style="height: ${fsPx * 0.35}px;"></div>` : '';
 
                         pageSlotsHtml += `
-                            <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col justify-center cursor-pointer overflow-hidden ${activeClass}" style="width: 100%; ${border} padding: 24px; box-sizing: border-box;">
+                            <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col justify-start cursor-pointer overflow-hidden ${activeClass}" style="width: 100%; ${border} padding: 24px; box-sizing: border-box;">
                                 <div style="display: flex; flex-direction: column; width: 100%;">
                                     ${imgHtml}
                                     ${gapHtml}
@@ -791,9 +789,8 @@
                                 blockH += aBoxH;
                             }
                             
-                            // 3. Perfect vertical centering of the entire group
-                            let startY = y + (cH - blockH) / 2;
-                            if (startY < y + pad) startY = y + pad; 
+                            // 3. Top-alignment of the entire group (respecting safe padding so it never hits the margin edge)
+                            let startY = y + pad; 
                             
                             let currentY = startY;
                             
