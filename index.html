@@ -79,7 +79,7 @@
 <body class="p-4 md:p-6 lg:p-8">
 
     <div class="max-w-[1300px] mx-auto">
-        <!-- Top Header -->
+        <!-- Header -->
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 bg-white p-4 md:px-6 rounded-lg border border-[#E9E9E7] shadow-sm">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded bg-[#F7F7F5] border border-[#E9E9E7] flex items-center justify-center shrink-0">
@@ -109,7 +109,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Editor Panel -->
+            <!-- Editor -->
             <div class="lg:col-span-5 flex flex-col gap-6">
                 <div class="bg-white rounded-lg shadow-sm border border-[#E9E9E7] overflow-hidden sticky top-8 flex flex-col">
                     
@@ -122,13 +122,11 @@
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount">Total: 6 slots</span>
                     </div>
 
-                    <!-- Styling Toolbar - Fixed Spacing (gap-x-10) -->
+                    <!-- Styling - Fixed Spacing -->
                     <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-10 gap-y-4">
                         <div class="flex items-center gap-3">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Box Color:</span>
-                            <div class="flex gap-2" id="colorSwatches">
-                                <!-- Colors injected via JS -->
-                            </div>
+                            <div class="flex gap-2" id="colorSwatches"></div>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Font:</span>
@@ -137,7 +135,6 @@
                                     <option value="sans">Modern (Sans)</option>
                                     <option value="serif">Classic (Serif)</option>
                                     <option value="mono">Typewriter (Mono)</option>
-                                    <option value="kite">Kite One</option>
                                 </select>
                                 <div class="absolute pointer-events-none flex items-center justify-center end-2">
                                     <i data-lucide="chevron-down" size="14" class="text-[#9B9A97]"></i>
@@ -147,17 +144,14 @@
                     </div>
 
                     <div class="p-6 space-y-6">
-                        
-                        <!-- Image Upload -->
+                        <!-- Clinical Images -->
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label class="flex items-center gap-1.5 text-xs font-bold text-[#37352F]">
                                     <span class="text-[#9B9A97]">1.</span> <span>Clinical Images</span>
                                 </label>
                             </div>
-                            
                             <div id="thumbContainer" class="hidden w-full bg-[#F7F7F5] border border-[#E9E9E7] rounded-md p-2 mb-2 flex gap-2 overflow-x-auto thumb-scroll"></div>
-
                             <div id="dropZone" class="relative group w-full h-28 rounded-md border border-dashed border-[#D3D3D1] bg-[#F7F7F5] flex flex-col items-center justify-center cursor-pointer hover:border-[#9B9A97] transition-all overflow-hidden">
                                 <div class="flex flex-col items-center relative z-10">
                                     <i data-lucide="image-plus" class="text-[#9B9A97] w-5 h-5 mb-2 group-hover:text-[#37352F] transition-colors"></i>
@@ -187,25 +181,20 @@
                             <textarea id="aInput" class="w-full h-20 p-3 rounded-md border outline-none text-sm text-[#37352F] font-bold resize-none" placeholder="A) Iron deficiency anemia&#10;B) Microcytic, hypochromic"></textarea>
                         </div>
 
-                        <button id="nextBtn" class="w-full bg-[#2F3437] hover:bg-[#191919] text-white py-3 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm">
-                            <!-- Injected by JS -->
-                        </button>
+                        <button id="nextBtn" class="w-full bg-[#2F3437] hover:bg-[#191919] text-white py-3 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm"></button>
                     </div>
                 </div>
             </div>
 
-            <!-- Preview Panel -->
+            <!-- Preview -->
             <div class="lg:col-span-7 flex flex-col h-[calc(100vh-6rem)]">
                 <div class="flex justify-between items-end mb-3 shrink-0 px-1">
                     <div>
                         <h3 class="text-sm font-bold text-[#37352F] mb-0.5">Interactive Workspace Preview</h3>
                     </div>
                 </div>
-                
                 <div id="previewScrollArea" class="bg-[#EFEFED] p-4 sm:p-8 rounded-lg border border-[#E9E9E7] overflow-y-auto thumb-scroll flex-1 shadow-inner relative">
-                    <div id="gridPreview" class="relative flex flex-col gap-10 items-center w-full max-w-3xl mx-auto pb-8 z-10">
-                        <!-- Pages injected here -->
-                    </div>
+                    <div id="gridPreview" class="relative flex flex-col gap-10 items-center w-full max-w-3xl mx-auto pb-8 z-10"></div>
                 </div>
             </div>
         </div>
@@ -213,13 +202,9 @@
         <!-- Footer -->
         <footer class="mt-8 pt-5 border-t border-[#E9E9E7] text-center">
             <p class="text-sm text-[#9B9A97] font-medium">
-                Added by Muhammad Saadoon |
-                <a href="https://t.me/anemd" target="_blank" rel="noopener noreferrer" class="text-[#37352F] hover:text-[#0088cc] font-bold transition-colors inline-flex items-center gap-1">
-                    @anemd
-                </a>
+                Added by Muhammad Saadoon | <a href="https://t.me/anemd" target="_blank" class="text-[#37352F] hover:text-[#0088cc] font-bold transition-colors inline-flex items-center gap-1">@anemd</a>
             </p>
         </footer>
-
     </div>
 
     <script>
@@ -239,8 +224,7 @@
         const fonts = {
             sans:  { css: "'Inter', sans-serif", jspdf: "helvetica" },
             serif: { css: "Georgia, serif", jspdf: "times" },
-            mono:  { css: "'Courier New', Courier, monospace", jspdf: "courier" },
-            kite:  { css: "'Kite One', sans-serif", jspdf: "helvetica" }
+            mono:  { css: "'Courier New', Courier, monospace", jspdf: "courier" }
         };
 
         let activeTheme = 'pink';
@@ -260,13 +244,16 @@
             scrollArea: document.getElementById('previewScrollArea')
         };
 
+        // THE FIX: Sync text to data store in real-time
+        ui.q.oninput = () => { dataStore[activeIdx].questions = ui.q.value; refresh(false); };
+        ui.a.oninput = () => { dataStore[activeIdx].answers = ui.a.value; refresh(false); };
+
         function initStylingControls() {
             const swatches = document.getElementById('colorSwatches');
             swatches.innerHTML = Object.keys(themes).map(key => `
                 <button onclick="changeTheme('${key}')" 
                     class="w-5 h-5 rounded-full transition-all focus:outline-none ${activeTheme === key ? 'ring-2 ring-[#37352F] ring-offset-1 scale-110' : 'hover:scale-110'}" 
-                    style="background-color: ${themes[key].bg}; border: 1px solid ${themes[key].border};" 
-                    title="${themes[key].name}">
+                    style="background-color: ${themes[key].bg}; border: 1px solid ${themes[key].border};">
                 </button>
             `).join('');
         }
@@ -274,12 +261,12 @@
         function changeTheme(key) {
             activeTheme = key;
             initStylingControls();
-            refresh();
+            refresh(false); // Fix: Don't reset textarea values from dataStore when styling changes
         }
 
         function changeFont(key) {
             activeFont = key;
-            refresh();
+            refresh(false); // Fix: Don't reset textarea values from dataStore when styling changes
         }
 
         initStylingControls();
@@ -292,29 +279,22 @@
             }
             if (shouldRefresh) {
                 activeIdx = startId; 
-                refresh();
+                refresh(true);
                 scrollToActive();
             }
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
         function scalePages() {
             document.querySelectorAll('.a4-wrapper').forEach(wrapper => {
                 const scale = wrapper.clientWidth / 794;
                 const page = wrapper.querySelector('.a4-page');
-                if (page) {
-                    page.style.transform = `scale(${scale})`;
-                }
+                if (page) page.style.transform = `scale(${scale})`;
             });
         }
         
         window.addEventListener('resize', scalePages);
 
-        function refresh() {
+        function refresh(updateEditor = true) {
             const item = dataStore[activeIdx];
             const currentPage = Math.floor(activeIdx / 6) + 1;
             const currentSlotOnPage = (activeIdx % 6) + 1;
@@ -323,20 +303,21 @@
             ui.slotLabel.textContent = currentSlotOnPage;
             ui.totalCount.textContent = `Total: ${dataStore.length} slots`;
             
+            // Apply current styling to Editor inputs
             ui.q.style.fontFamily = fonts[activeFont].css;
             ui.a.style.fontFamily = fonts[activeFont].css;
             ui.a.style.backgroundColor = themes[activeTheme].bg;
             ui.a.style.borderColor = themes[activeTheme].border;
 
-            ui.q.value = item.questions;
-            ui.a.value = item.answers;
+            if (updateEditor) {
+                ui.q.value = item.questions;
+                ui.a.value = item.answers;
+            }
             
             if (item.images.length > 0) {
                 ui.thumbContainer.classList.remove('hidden');
                 ui.dropZone.classList.add('h-14');
                 ui.dropZone.classList.remove('h-28');
-                ui.dropZone.querySelector('.dz-text').textContent = "Add more images";
-                
                 ui.thumbContainer.innerHTML = item.images.map((img, i) => `
                     <div class="relative shrink-0 w-12 h-12 bg-white rounded border border-[#E9E9E7] p-1 group">
                         <img src="${img}" class="w-full h-full object-cover rounded-sm" />
@@ -349,7 +330,6 @@
                 ui.thumbContainer.classList.add('hidden');
                 ui.dropZone.classList.add('h-28');
                 ui.dropZone.classList.remove('h-14');
-                ui.dropZone.querySelector('.dz-text').textContent = "Click to add images";
             }
 
             const totalPages = dataStore.length / 6;
@@ -357,11 +337,9 @@
 
             for (let p = 0; p < totalPages; p++) {
                 let pageSlotsHtml = '';
-                
                 for (let i = 0; i < 6; i++) {
                     const globalIdx = (p * 6) + i;
                     const s = dataStore[globalIdx];
-                    
                     let borderStyle = 'border-color: #E9E9E7; border-style: solid; border-width: 0; border-right-width: ' + (i % 2 === 0 ? '2px; ' : '0; ');
                     if (i < 4) borderStyle += 'border-bottom-width: 2px; ';
                     
@@ -380,15 +358,12 @@
                         imgHtml = `<div style="flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 0;"><div style="font-size: 11px; color: #D3D3D1; font-weight: bold; padding: 4px 10px; border-radius: 4px; border: 1px solid #E9E9E7; background: white; text-transform: uppercase;">P${p+1} - Slot ${i+1}</div></div>`;
                     }
 
-                    const qHtml = s.questions ? escapeHtml(s.questions) : '';
-                    const aHtml = s.answers ? escapeHtml(s.answers) : '';
-
                     pageSlotsHtml += `
                         <div ${activeIdAttr} onclick="goto(${globalIdx})" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${borderStyle} padding: 28px; box-sizing: border-box;">
                             ${imgHtml}
                             <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%; flex-shrink: 0;">
-                                ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word; text-align: start;">${qHtml}</div>` : ''}
-                                ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word; text-align: start;">${aHtml}</div>` : ''}
+                                ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word;">${s.questions}</div>` : ''}
+                                ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word;">${s.answers}</div>` : ''}
                             </div>
                         </div>
                     `;
@@ -400,9 +375,7 @@
                             <span class="text-[10px] font-bold text-[#9B9A97] whitespace-nowrap uppercase">Page ${p + 1}</span>
                         </div>
                         <div class="a4-wrapper">
-                            <div class="a4-page a4-page-scaled" id="page-${p}">
-                                ${pageSlotsHtml}
-                            </div>
+                            <div class="a4-page a4-page-scaled" id="page-${p}">${pageSlotsHtml}</div>
                         </div>
                     </div>
                 `;
@@ -428,55 +401,31 @@
         }
 
         ui.dropZone.onclick = () => ui.file.click();
-        
         ui.file.onchange = (e) => {
             const files = Array.from(e.target.files);
-            if (!files.length) return;
             files.forEach(file => {
                 const r = new FileReader();
-                r.onload = (ev) => {
-                    dataStore[activeIdx].images.push(ev.target.result);
-                    refresh();
-                };
+                r.onload = (ev) => { dataStore[activeIdx].images.push(ev.target.result); refresh(false); };
                 r.readAsDataURL(file);
             });
             ui.file.value = ""; 
         };
 
-        window.removeImage = (imgIdx) => {
-            dataStore[activeIdx].images.splice(imgIdx, 1);
-            refresh();
-        };
-
-        window.goto = (idx) => { 
-            activeIdx = idx; 
-            refresh(); 
-            scrollToActive();
-        };
+        window.removeImage = (imgIdx) => { dataStore[activeIdx].images.splice(imgIdx, 1); refresh(false); };
+        window.goto = (idx) => { activeIdx = idx; refresh(true); scrollToActive(); };
 
         ui.next.onclick = () => {
             dataStore[activeIdx].questions = ui.q.value;
             dataStore[activeIdx].answers = ui.a.value;
             dataStore[activeIdx].filled = true;
-            
-            if (activeIdx < dataStore.length - 1) { 
-                activeIdx++; 
-                refresh();
-                scrollToActive();
-            } else { 
-                addNewPage();
-            }
+            if (activeIdx < dataStore.length - 1) { activeIdx++; refresh(true); scrollToActive(); }
+            else { addNewPage(); }
         };
 
         document.getElementById('clearBtn').onclick = () => {
-            if(confirm("Are you sure you want to clear all data and reset to a single empty page?")) {
-                dataStore = [];
-                activeIdx = 0;
-                addNewPage(true);
-            }
+            if(confirm("Erase all data and reset?")) { dataStore = []; activeIdx = 0; addNewPage(true); }
         };
 
-        // --- NATIVE TRUE PDF ENGINE ---
         async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true;
@@ -489,108 +438,58 @@
 
             const activeRGB = themes[activeTheme].rgb;
             const activeJsPdfFont = fonts[activeFont].jspdf;
-
             const totalPages = dataStore.length / 6;
 
             for (let p = 0; p < totalPages; p++) {
                 if (p > 0) doc.addPage(); 
-
-                doc.setDrawColor(233, 233, 231); // Matching Notion-like divider color
+                doc.setDrawColor(233, 233, 231);
                 doc.setLineWidth(0.3);
-                doc.line(cW, 0, cW, 297);
-                doc.line(0, cH, 210, cH);
-                doc.line(0, cH * 2, 210, cH * 2);
+                doc.line(cW, 0, cW, 297); doc.line(0, cH, 210, cH); doc.line(0, cH * 2, 210, cH * 2);
 
                 for (let i = 0; i < 6; i++) {
-                    const globalIdx = (p * 6) + i;
-                    const s = dataStore[globalIdx];
-                    
-                    const x = (i % 2) * cW;
-                    const y = Math.floor(i / 2) * cH;
-
-                    let aBoxH = 0;
-                    let aBoxY = y + cH - pad; 
-                    let aLines = [];
+                    const s = dataStore[(p * 6) + i];
+                    const x = (i % 2) * cW, y = Math.floor(i / 2) * cH;
+                    let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
 
                     if (s.answers) {
                         doc.setFont(activeJsPdfFont, "bold");
                         aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6); 
-                        aBoxH = (aLines.length * 5) + 6; 
-                        aBoxY = y + cH - pad - aBoxH; 
-                        
-                        doc.setFillColor(activeRGB[0], activeRGB[1], activeRGB[2]); 
-                        doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
-                        
-                        doc.setFontSize(10);
-                        doc.setTextColor(55, 53, 47);
-                        doc.text(aLines, x + pad + 3, aBoxY + 5.5);
+                        aBoxH = (aLines.length * 5) + 6; aBoxY = y + cH - pad - aBoxH; 
+                        doc.setFillColor(activeRGB[0], activeRGB[1], activeRGB[2]); doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
+                        doc.setFontSize(10); doc.setTextColor(55, 53, 47); doc.text(aLines, x + pad + 3, aBoxY + 5.5);
                     }
 
-                    let qH = 0;
-                    let qY = aBoxY; 
-                    let qLines = [];
-
+                    let qH = 0, qY = aBoxY, qLines = [];
                     if (s.questions) {
                         doc.setFont(activeJsPdfFont, "bold");
                         qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
-                        qH = qLines.length * 4.5;
-                        qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
-                        
-                        doc.setFontSize(10);
-                        doc.setTextColor(55, 53, 47);
-                        doc.text(qLines, x + pad + 3, qY + 3.5); 
+                        qH = qLines.length * 4.5; qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
+                        doc.setFontSize(10); doc.setTextColor(55, 53, 47); doc.text(qLines, x + pad + 3, qY + 3.5); 
                     }
 
                     if (s.images.length > 0) {
-                        let maxAvailableHeight = qY - y - pad - 2; 
-                        let maxAvailableWidth = cW - (pad * 2);
-                        
-                        let cols = s.images.length === 1 ? 1 : 2; 
-                        let rows = Math.ceil(s.images.length / cols);
-                        let gap = 3; 
-                        
-                        let cellW = (maxAvailableWidth - (cols - 1) * gap) / cols;
-                        let cellH = (maxAvailableHeight - (rows - 1) * gap) / rows;
+                        let maxAvailableHeight = qY - y - pad - 2, maxAvailableWidth = cW - (pad * 2);
+                        let cols = s.images.length === 1 ? 1 : 2, rows = Math.ceil(s.images.length / cols), gap = 3; 
+                        let cellW = (maxAvailableWidth - (cols - 1) * gap) / cols, cellH = (maxAvailableHeight - (rows - 1) * gap) / rows;
 
                         s.images.forEach((imgSrc, idx) => {
                             try {
-                                const imgR = Math.floor(idx / cols);
-                                const imgC = idx % cols;
-                                
                                 const props = doc.getImageProperties(imgSrc);
                                 const ratio = props.height / props.width;
-                                
-                                let finalW = cellW;
-                                let finalH = finalW * ratio;
-                                
-                                if (finalH > cellH) {
-                                    finalH = cellH;
-                                    finalW = finalH / ratio;
-                                }
-                                
-                                const cellXStart = x + pad + (imgC * (cellW + gap));
-                                const cellYStart = y + pad + (imgR * (cellH + gap));
-                                
-                                const cx = cellXStart + (cellW - finalW) / 2;
-                                const cy = cellYStart + (cellH - finalH) / 2;
-                                
+                                let finalW = cellW, finalH = finalW * ratio;
+                                if (finalH > cellH) { finalH = cellH; finalW = finalH / ratio; }
+                                const cx = x + pad + (idx % cols) * (cellW + gap) + (cellW - finalW) / 2;
+                                const cy = y + pad + Math.floor(idx / cols) * (cellH + gap) + (cellH - finalH) / 2;
                                 doc.addImage(imgSrc, 'JPEG', cx, cy, finalW, finalH, undefined, 'FAST');
-                            } catch(err) {
-                                console.error("Image draw error", err);
-                            }
+                            } catch(err) { console.error(err); }
                         });
                     }
                 }
             }
-
             doc.save(`Summary_Sheet_${Date.now()}.pdf`);
-            btn.disabled = false;
-            btn.innerHTML = original;
-            lucide.createIcons();
+            btn.disabled = false; btn.innerHTML = original; lucide.createIcons();
         }
-
         document.getElementById('downloadBtn').onclick = buildPDF;
     </script>
 </body>
 </html>
-
