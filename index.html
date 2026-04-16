@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .active-slot { border-color: #2563eb !important; background-color: #eff6ff; box-shadow: 0 0 0 4px #dbeafe; }
         .spinner {
@@ -86,7 +86,7 @@
                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Questions</label>
                                 <span class="text-[10px] text-slate-400 font-medium">Appears above pink box</span>
                             </div>
-                            <textarea id="qInput" class="w-full h-20 p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm resize-none" placeholder="A) What is the diagnosis?"></textarea>
+                            <textarea id="qInput" class="w-full h-20 p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm font-bold resize-none" placeholder="A) What is the diagnosis?"></textarea>
                         </div>
 
                         <!-- Answers -->
@@ -95,7 +95,7 @@
                                 <label class="block text-[10px] font-black text-rose-400 uppercase tracking-widest">3. Answers (Pink Box)</label>
                                 <span class="text-[10px] text-rose-400 font-medium">Anchored to bottom</span>
                             </div>
-                            <textarea id="aInput" class="w-full h-20 p-3 rounded-xl border border-rose-100 bg-rose-50/50 focus:bg-white focus:ring-2 focus:ring-rose-100 outline-none transition-all text-sm text-rose-900 font-semibold resize-none" placeholder="A) Iron deficiency anemia"></textarea>
+                            <textarea id="aInput" class="w-full h-20 p-3 rounded-xl border border-rose-100 bg-rose-50/50 focus:bg-white focus:ring-2 focus:ring-rose-100 outline-none transition-all text-sm text-rose-900 font-bold resize-none" placeholder="A) Iron deficiency anemia"></textarea>
                         </div>
 
                         <button id="nextBtn" class="w-full bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg">
@@ -121,7 +121,7 @@
                     <div>
                         <p class="font-bold mb-1">How dynamic anchoring works:</p>
                         <p>1. The Pink Box is built from the bottom up.<br>
-                           2. The Questions are placed directly above the Pink Box.<br>
+                           2. The Questions are placed directly above the Pink Box and made <b>bold</b>.<br>
                            3. The Images automatically share whatever space is left at the top in a grid, maintaining their natural shape.</p>
                     </div>
                 </div>
@@ -192,7 +192,7 @@
                             `<span class="text-xs font-bold text-slate-400">${s.images.length} Image(s)</span>` : 
                             '<i data-lucide="image" class="w-4 h-4 text-slate-200"></i>'}
                     </div>
-                    ${s.questions ? '<div class="h-1 w-full bg-slate-300 rounded mb-0.5"></div><div class="h-1 w-2/3 bg-slate-300 rounded mb-2"></div>' : '<div class="h-2 mb-2"></div>'}
+                    ${s.questions ? '<div class="h-1 w-full bg-slate-400 rounded mb-0.5"></div><div class="h-1 w-2/3 bg-slate-400 rounded mb-2"></div>' : '<div class="h-2 mb-2"></div>'}
                     <div class="h-6 rounded border ${s.answers ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}"></div>
                 </div>
             `).join('');
@@ -293,7 +293,8 @@
                     qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
                     
                     doc.setFontSize(10);
-                    doc.setFont("helvetica", "normal");
+                    // CHANGED: Made questions BOLD here
+                    doc.setFont("helvetica", "bold");
                     doc.setTextColor(0);
                     // jsPDF draws text from bottom-left, so we add the line height (~3.5mm)
                     doc.text(qLines, x + pad, qY + 3.5);
