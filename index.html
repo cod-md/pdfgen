@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Study Sheet Builder</title>
+    <title>Advanced Medical Sheet Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .active-slot { border-color: #2563eb !important; background-color: #eff6ff; ring: 4px; ring-color: #dbeafe; }
+        .active-slot { border-color: #2563eb !important; background-color: #eff6ff; box-shadow: 0 0 0 4px #dbeafe; }
         .spinner {
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -21,6 +21,9 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Custom scrollbar for thumbnails */
+        .thumb-scroll::-webkit-scrollbar { height: 6px; }
+        .thumb-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -30,10 +33,10 @@
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <i data-lucide="clipboard-list" class="text-blue-600"></i>
-                    Study Sheet Builder
+                    <i data-lucide="layout-template" class="text-blue-600"></i>
+                    Advanced Sheet Builder
                 </h1>
-                <p class="text-slate-500">Create standardized 2x3 grid medical sheets.</p>
+                <p class="text-slate-500 text-sm">Multiple images supported • Dynamic text anchoring</p>
             </div>
             <div class="flex items-center gap-4">
                 <button id="clearBtn" class="text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors">Clear All</button>
@@ -44,72 +47,82 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- STEP-BY-STEP EDITOR (Left) -->
+            <!-- EDITOR PANEL (Left) -->
             <div class="lg:col-span-5">
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden sticky top-8">
-                    <div class="bg-slate-900 px-6 py-5 text-white flex justify-between items-center">
-                        <span class="font-bold text-sm tracking-widest uppercase">Input: Slot <span id="slotLabel">1</span></span>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-8">
+                    <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
+                        <span class="font-bold text-sm tracking-widest uppercase">Editing Slot <span id="slotLabel" class="bg-blue-500 px-2 py-0.5 rounded ml-1">1</span></span>
                         <div class="flex gap-1" id="navDots"></div>
                     </div>
 
-                    <div class="p-6 space-y-6">
-                        <!-- Image Upload -->
+                    <div class="p-6 space-y-5">
+                        
+                        <!-- Multi-Image Upload -->
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">1. Image Area (Top)</label>
-                            <div id="dropZone" class="relative group w-full h-44 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all overflow-hidden">
-                                <div id="uploadText" class="flex flex-col items-center">
-                                    <i data-lucide="image" class="text-slate-300 mb-2"></i>
-                                    <span class="text-xs text-slate-400">Add Patient Image</span>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Images (Upload Multiple)</label>
+                                <span class="text-[10px] text-slate-400 font-medium bg-slate-100 px-2 py-0.5 rounded">Aspect Ratios Preserved</span>
+                            </div>
+                            
+                            <!-- Thumbnail Area -->
+                            <div id="thumbContainer" class="hidden w-full bg-slate-50 border border-slate-200 rounded-xl p-2 mb-2 flex gap-2 overflow-x-auto thumb-scroll">
+                                <!-- Thumbs injected here -->
+                            </div>
+
+                            <div id="dropZone" class="relative w-full h-32 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all">
+                                <div class="flex flex-col items-center">
+                                    <i data-lucide="images" class="text-slate-300 mb-2"></i>
+                                    <span class="text-xs text-slate-400 font-medium">Click to add images</span>
                                 </div>
-                                <img id="previewImg" class="hidden absolute inset-0 w-full h-full object-contain p-2" />
-                                <input type="file" id="fileInput" class="hidden" accept="image/*">
+                                <input type="file" id="fileInput" class="hidden" accept="image/*" multiple>
                             </div>
                         </div>
 
-                        <!-- Question Input -->
+                        <!-- Questions -->
                         <div>
-                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">2. Question Area (Middle)</label>
-                            <textarea id="qInput" class="w-full h-24 p-4 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm resize-none" placeholder="A) What is the clinical sign?&#10;B) What is the diagnosis?"></textarea>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Questions</label>
+                                <span class="text-[10px] text-slate-400 font-medium">Appears above pink box</span>
+                            </div>
+                            <textarea id="qInput" class="w-full h-20 p-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm resize-none" placeholder="A) What is the diagnosis?"></textarea>
                         </div>
 
-                        <!-- Answer Input -->
+                        <!-- Answers -->
                         <div>
-                            <label class="block text-[10px] font-black text-rose-400 uppercase tracking-widest mb-2">3. Answer Area (Bottom Pink Box)</label>
-                            <textarea id="aInput" class="w-full h-24 p-4 rounded-2xl border border-rose-100 bg-rose-50/50 focus:bg-white focus:ring-4 focus:ring-rose-50 outline-none transition-all text-sm text-rose-900 font-semibold resize-none" placeholder="A) Koilonychia&#10;B) Iron Deficiency Anemia"></textarea>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="block text-[10px] font-black text-rose-400 uppercase tracking-widest">3. Answers (Pink Box)</label>
+                                <span class="text-[10px] text-rose-400 font-medium">Anchored to bottom</span>
+                            </div>
+                            <textarea id="aInput" class="w-full h-20 p-3 rounded-xl border border-rose-100 bg-rose-50/50 focus:bg-white focus:ring-2 focus:ring-rose-100 outline-none transition-all text-sm text-rose-900 font-semibold resize-none" placeholder="A) Iron deficiency anemia"></textarea>
                         </div>
 
-                        <button id="nextBtn" class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-slate-200">
-                            Save & Move to Next Slot
+                        <button id="nextBtn" class="w-full bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg">
+                            Save & Next Compartment
                             <i data-lucide="arrow-right" size="18"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- SHEET PREVIEW (Right) -->
+            <!-- PREVIEW PANEL (Right) -->
             <div class="lg:col-span-7">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Live 2x3 Grid Layout Preview</h3>
-                    <span class="text-[10px] text-slate-400 italic">Click any box to edit that slot</span>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">A4 Structure Preview</h3>
                 </div>
                 
-                <div id="gridPreview" class="grid grid-cols-2 gap-4 bg-slate-300 p-2 rounded-3xl border border-slate-300">
+                <div id="gridPreview" class="grid grid-cols-2 gap-3 bg-slate-300 p-2 rounded-2xl border border-slate-300">
                     <!-- Boxes injected here -->
                 </div>
 
-                <div class="mt-6 p-5 bg-emerald-50 rounded-2xl border border-emerald-100 flex gap-4">
-                    <div class="bg-emerald-100 text-emerald-600 p-2 rounded-xl h-fit">
-                        <i data-lucide="shield-check" size="20"></i>
-                    </div>
-                    <div class="text-xs text-emerald-800 leading-relaxed">
-                        <p class="font-bold mb-1">Layout Constraints Active (Overlap Fixed):</p>
-                        <ul class="list-disc ml-4 space-y-1">
-                            <li>Images are strictly constrained to a max height of <b>45mm</b>.</li>
-                            <li>Questions start strictly at <b>56mm</b> (safely below the image).</li>
-                            <li>Answer boxes are locked at <b>78mm</b> (at the bottom).</li>
-                        </ul>
+                <div class="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100 flex gap-3 text-blue-800 text-xs">
+                    <i data-lucide="info" class="shrink-0" size="18"></i>
+                    <div>
+                        <p class="font-bold mb-1">How dynamic anchoring works:</p>
+                        <p>1. The Pink Box is built from the bottom up.<br>
+                           2. The Questions are placed directly above the Pink Box.<br>
+                           3. The Images automatically share whatever space is left at the top in a grid, maintaining their natural shape.</p>
                     </div>
                 </div>
             </div>
@@ -119,14 +132,16 @@
     <script>
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
+        
+        // Data Structure now holds an array of images per slot
         let dataStore = Array.from({ length: 6 }, (_, i) => ({
-            id: i, image: null, questions: "", answers: "", filled: false
+            id: i, images: [], questions: "", answers: "", filled: false
         }));
 
         const ui = {
             file: document.getElementById('fileInput'),
-            preview: document.getElementById('previewImg'),
-            uploadTxt: document.getElementById('uploadText'),
+            thumbContainer: document.getElementById('thumbContainer'),
+            dropZone: document.getElementById('dropZone'),
             q: document.getElementById('qInput'),
             a: document.getElementById('aInput'),
             grid: document.getElementById('gridPreview'),
@@ -136,57 +151,75 @@
         };
 
         function refresh() {
-            // Update Sidebar
             const item = dataStore[activeIdx];
             ui.label.textContent = activeIdx + 1;
             ui.q.value = item.questions;
             ui.a.value = item.answers;
-            if (item.image) {
-                ui.preview.src = item.image;
-                ui.preview.classList.remove('hidden');
-                ui.uploadTxt.classList.add('hidden');
+            
+            // Render Thumbnails
+            if (item.images.length > 0) {
+                ui.thumbContainer.classList.remove('hidden');
+                ui.dropZone.classList.add('h-16'); // Shrink dropzone
+                ui.dropZone.classList.remove('h-32');
+                ui.dropZone.querySelector('span').textContent = "Add more";
+                
+                ui.thumbContainer.innerHTML = item.images.map((img, i) => `
+                    <div class="relative shrink-0 w-16 h-16 bg-white rounded border border-slate-200 p-1 group">
+                        <img src="${img}" class="w-full h-full object-contain" />
+                        <button onclick="removeImage(${i})" class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white rounded-full p-0.5 hidden group-hover:block hover:bg-rose-600 transition-colors">
+                            <i data-lucide="x" size="12"></i>
+                        </button>
+                    </div>
+                `).join('');
             } else {
-                ui.preview.classList.add('hidden');
-                ui.uploadTxt.classList.remove('hidden');
+                ui.thumbContainer.classList.add('hidden');
+                ui.dropZone.classList.add('h-32');
+                ui.dropZone.classList.remove('h-16');
+                ui.dropZone.querySelector('span').textContent = "Click to add images";
             }
 
             // Update Dots
             ui.dots.innerHTML = dataStore.map((s, i) => `
-                <div class="w-1.5 h-1.5 rounded-full ${i === activeIdx ? 'bg-blue-400 w-4' : (s.filled ? 'bg-slate-500' : 'bg-slate-700')}"></div>
+                <div class="w-1.5 h-1.5 rounded-full ${i === activeIdx ? 'bg-blue-400 w-4' : (s.filled ? 'bg-slate-400' : 'bg-slate-700')}"></div>
             `).join('');
 
-            // Update Grid
+            // Update Grid Preview
             ui.grid.innerHTML = dataStore.map((s, i) => `
-                <div onclick="goto(${i})" class="bg-white rounded-2xl p-4 aspect-[3/4.2] flex flex-col gap-3 cursor-pointer border-4 transition-all ${i === activeIdx ? 'active-slot' : 'border-transparent shadow-sm'}">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black text-slate-300">BOX ${i+1}</span>
-                        ${s.filled ? '<i data-lucide="check-circle" class="text-emerald-400 w-3 h-3"></i>' : ''}
+                <div onclick="goto(${i})" class="bg-white rounded-xl p-3 aspect-[3/4] flex flex-col cursor-pointer border-2 transition-all ${i === activeIdx ? 'active-slot' : 'border-transparent'}">
+                    <span class="text-[8px] font-black text-slate-300 mb-1">BOX ${i+1}</span>
+                    <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center mb-2 overflow-hidden gap-1 p-1">
+                        ${s.images.length > 0 ? 
+                            `<span class="text-xs font-bold text-slate-400">${s.images.length} Image(s)</span>` : 
+                            '<i data-lucide="image" class="w-4 h-4 text-slate-200"></i>'}
                     </div>
-                    <div class="h-28 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center overflow-hidden">
-                        ${s.image ? `<img src="${s.image}" class="h-full w-full object-contain" />` : '<i data-lucide="image" class="w-4 h-4 text-slate-200"></i>'}
-                    </div>
-                    <div class="flex-1 space-y-2 py-1">
-                        <div class="h-1.5 w-full bg-slate-100 rounded"></div>
-                        <div class="h-1.5 w-3/4 bg-slate-100 rounded"></div>
-                    </div>
-                    <div class="h-10 rounded-xl border ${s.answers ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}"></div>
+                    ${s.questions ? '<div class="h-1 w-full bg-slate-300 rounded mb-0.5"></div><div class="h-1 w-2/3 bg-slate-300 rounded mb-2"></div>' : '<div class="h-2 mb-2"></div>'}
+                    <div class="h-6 rounded border ${s.answers ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}"></div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
         // Logic
-        document.getElementById('dropZone').onclick = () => ui.file.click();
+        ui.dropZone.onclick = () => ui.file.click();
+        
         ui.file.onchange = (e) => {
-            const f = e.target.files[0];
-            if (f) {
+            const files = Array.from(e.target.files);
+            if (!files.length) return;
+
+            files.forEach(file => {
                 const r = new FileReader();
                 r.onload = (ev) => {
-                    dataStore[activeIdx].image = ev.target.result;
+                    dataStore[activeIdx].images.push(ev.target.result);
                     refresh();
                 };
-                r.readAsDataURL(f);
-            }
+                r.readAsDataURL(file);
+            });
+            ui.file.value = ""; // reset input
+        };
+
+        window.removeImage = (imgIdx) => {
+            dataStore[activeIdx].images.splice(imgIdx, 1);
+            refresh();
         };
 
         window.goto = (idx) => { activeIdx = idx; refresh(); };
@@ -196,98 +229,123 @@
             dataStore[activeIdx].answers = ui.a.value;
             dataStore[activeIdx].filled = true;
             if (activeIdx < 5) { activeIdx++; refresh(); }
-            else { alert("All slots updated. You can now generate the PDF!"); refresh(); }
+            else { alert("All slots filled! You can generate the PDF."); refresh(); }
         };
 
         document.getElementById('clearBtn').onclick = () => {
-            if(confirm("Wipe all slots?")) {
-                dataStore.forEach(s => { s.image = null; s.questions = ""; s.answers = ""; s.filled = false; });
+            if(confirm("Wipe all compartments?")) {
+                dataStore.forEach(s => { s.images = []; s.questions = ""; s.answers = ""; s.filled = false; });
                 activeIdx = 0; refresh();
             }
         };
 
-        // --- CORRECTED PDF GENERATION ENGINE ---
+        // --- PDF GENERATION: BOTTOM-UP TEXT & MULTI-IMAGE GRID ---
         async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true;
             const original = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner"></div> Exporting...`;
+            btn.innerHTML = `<div class="spinner"></div> Generating...`;
 
             const doc = new jsPDF('p', 'mm', 'a4');
-            const pW = 210, pH = 297;
-            const cW = pW / 2, cH = pH / 3;
-            const pad = 12;
+            const cW = 210 / 2, cH = 297 / 3;
+            const pad = 8; // 8mm padding inside cells
 
-            // Draw divider lines
+            // Draw grid lines
             doc.setDrawColor(0);
             doc.setLineWidth(0.4);
-            doc.line(cW, 0, cW, pH);
-            doc.line(0, cH, pW, cH);
-            doc.line(0, cH * 2, pW, cH * 2);
+            doc.line(cW, 0, cW, 297);
+            doc.line(0, cH, 210, cH);
+            doc.line(0, cH * 2, 210, cH * 2);
 
             for (let i = 0; i < 6; i++) {
                 const s = dataStore[i];
-                const col = i % 2, row = Math.floor(i / 2);
-                
-                // Top-Left corner coordinates for this specific cell
-                const x = col * cW;
-                const y = row * cH;
+                const x = (i % 2) * cW;
+                const y = Math.floor(i / 2) * cH;
 
-                // 1. IMAGE ZONE (Strict Max Height: 45mm, Start: y+5)
-                if (s.image) {
-                    try {
-                        // Let jsPDF read native properties to calculate precise aspect ratio
-                        const imgProps = doc.getImageProperties(s.image);
-                        const imgRatio = imgProps.height / imgProps.width;
-                        
-                        const maxW = cW - (pad * 2);
-                        const maxH = 45; // Hard limit so it never touches the text at y+56
-                        
-                        let finalW = maxW;
-                        let finalH = finalW * imgRatio;
-                        
-                        // If scaled height still exceeds maxH, scale by height instead
-                        if (finalH > maxH) {
-                            finalH = maxH;
-                            finalW = finalH / imgRatio;
-                        }
-                        
-                        // Center horizontally
-                        const centerX = x + (cW - finalW) / 2;
-                        
-                        doc.addImage(s.image, 'JPEG', centerX, y + 5, finalW, finalH, undefined, 'FAST');
-                    } catch(err) {
-                        console.error("Error drawing image in slot", i, err);
-                    }
-                }
+                doc.setFont("helvetica");
 
-                // 2. QUESTION ZONE (Strict Start: y+56)
-                // Since Max Image Height is 45mm (starting at y+5), the lowest the image can ever go is y+50.
-                // Starting questions at y+56 guarantees a 6mm buffer space.
-                const qY = y + 56; 
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
-                if (s.questions) {
-                    const lines = doc.splitTextToSize(s.questions, cW - (pad * 2));
-                    doc.text(lines, x + pad, qY);
-                }
+                // --- 1. CALCULATE PINK BOX (BOTTOM ANCHOR) ---
+                let aBoxH = 0;
+                let aBoxY = y + cH - pad; // Default bottom position
+                let aLines = [];
 
-                // 3. ANSWER ZONE (Strict Start: y+78)
-                const aY = y + 78;
                 if (s.answers) {
-                    const lines = doc.splitTextToSize(s.answers, cW - (pad * 3));
-                    const boxH = 15; // Standard 15mm height for the pink box
+                    aLines = doc.splitTextToSize(s.answers, cW - (pad * 3));
+                    aBoxH = (aLines.length * 5) + 6; // Height based on text lines
+                    aBoxY = y + cH - pad - aBoxH; // Move Y up by box height
                     
-                    doc.setFillColor(255, 215, 215); // Light Pink
-                    doc.rect(x + pad, aY, cW - (pad * 2), boxH, 'F');
-                    
+                    doc.setFillColor(255, 215, 215);
+                    doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
+                    doc.setFontSize(10);
                     doc.setFont("helvetica", "bold");
-                    doc.text(lines, x + pad + 3, aY + 5);
+                    doc.text(aLines, x + pad + 3, aBoxY + 5.5);
+                }
+
+                // --- 2. CALCULATE QUESTIONS (ABOVE PINK BOX) ---
+                let qH = 0;
+                let qY = aBoxY; // Default to pink box top
+                let qLines = [];
+
+                if (s.questions) {
+                    qLines = doc.splitTextToSize(s.questions, cW - (pad * 2));
+                    qH = qLines.length * 4.5;
+                    // Position Questions 3mm above the pink box
+                    qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(0);
+                    // jsPDF draws text from bottom-left, so we add the line height (~3.5mm)
+                    doc.text(qLines, x + pad, qY + 3.5);
+                }
+
+                // --- 3. CALCULATE IMAGES (DYNAMIC GRID IN REMAINING TOP SPACE) ---
+                if (s.images.length > 0) {
+                    // Total height available for images is from Top Padding down to the Questions
+                    let maxAvailableHeight = qY - y - pad - 2; // 2mm buffer before questions
+                    let maxAvailableWidth = cW - (pad * 2);
+                    
+                    // Determine grid layout based on number of images
+                    let cols = s.images.length === 1 ? 1 : 2; // Max 2 columns
+                    let rows = Math.ceil(s.images.length / cols);
+                    let gap = 3; // 3mm gap between images
+                    
+                    let cellW = (maxAvailableWidth - (cols - 1) * gap) / cols;
+                    let cellH = (maxAvailableHeight - (rows - 1) * gap) / rows;
+
+                    s.images.forEach((imgSrc, idx) => {
+                        try {
+                            const imgR = Math.floor(idx / cols);
+                            const imgC = idx % cols;
+                            
+                            const props = doc.getImageProperties(imgSrc);
+                            const ratio = props.height / props.width;
+                            
+                            let finalW = cellW;
+                            let finalH = finalW * ratio;
+                            
+                            // Keep aspect ratio intact within the grid cell
+                            if (finalH > cellH) {
+                                finalH = cellH;
+                                finalW = finalH / ratio;
+                            }
+                            
+                            // Center image inside its specific grid cell
+                            const cellXStart = x + pad + (imgC * (cellW + gap));
+                            const cellYStart = y + pad + (imgR * (cellH + gap));
+                            
+                            const cx = cellXStart + (cellW - finalW) / 2;
+                            const cy = cellYStart + (cellH - finalH) / 2;
+                            
+                            doc.addImage(imgSrc, 'JPEG', cx, cy, finalW, finalH, undefined, 'FAST');
+                        } catch(err) {
+                            console.error("Image draw error", err);
+                        }
+                    });
                 }
             }
 
-            doc.save(`Medical_Sheet_${Date.now()}.pdf`);
+            doc.save(`Advanced_Sheet_${Date.now()}.pdf`);
             btn.disabled = false;
             btn.innerHTML = original;
             lucide.createIcons();
