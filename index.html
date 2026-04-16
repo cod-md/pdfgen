@@ -4,10 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منشئ الملخصات الطبية | دعم عربي وإنجليزي</title>
+    <title>منشئ الملخصات الطبية | Medical Summary Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- تمت إضافة html2canvas لضمان دعم اللغة العربية بشكل مثالي في ملف الـ PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -20,6 +19,11 @@
             min-height: 100vh;
         }
         
+        /* Language specific fonts */
+        html[lang="en"] body {
+            font-family: 'Inter', sans-serif;
+        }
+
         .spinner {
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -35,7 +39,6 @@
         ::-webkit-scrollbar-thumb { background: #E9E9E7; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #D3D3D1; }
         
-        /* غلاف الصفحة لضبط الحجم التلقائي في المعاينة */
         .a4-wrapper {
             aspect-ratio: 1 / 1.4142;
             width: 100%;
@@ -46,7 +49,6 @@
             border-radius: 4px;
         }
 
-        /* الصفحة الفعلية بأبعاد A4 ثابتة بالبيكسل لضمان جودة التصدير */
         .a4-page {
             width: 794px;
             height: 1123px;
@@ -57,11 +59,19 @@
             box-sizing: border-box;
         }
 
-        .a4-page-scaled {
+        /* Dynamic origin based on direction */
+        html[dir="rtl"] .a4-page-scaled {
             position: absolute;
             top: 0;
-            right: 0; /* لأن الاتجاه RTL */
+            right: 0;
             transform-origin: top right;
+        }
+        
+        html[dir="ltr"] .a4-page-scaled {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: top left;
         }
         
         .active-cell::after {
@@ -91,22 +101,31 @@
                     <i data-lucide="layout-template" class="text-[#37352F] w-5 h-5"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight text-[#37352F]">
+                    <h1 class="text-xl font-bold tracking-tight text-[#37352F]" data-i18n="title">
                         منشئ الملخصات الطبية
                     </h1>
-                    <p class="text-[#9B9A97] text-xs mt-0.5 font-medium">يدعم اللغتين العربية والإنجليزية بذكاء • دقة تصدير WYSIWYG</p>
+                    <p class="text-[#9B9A97] text-xs mt-0.5 font-medium" data-i18n="subtitle">يدعم اللغتين العربية والإنجليزية بذكاء • دقة تصدير WYSIWYG</p>
                 </div>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
-                <button id="clearBtn" class="px-3 py-1.5 text-[#9B9A97] hover:text-[#EB5757] hover:bg-[#FFF3F3] rounded text-sm font-medium transition-all">مسح الكل</button>
+                <!-- Language Toggle -->
+                <button onclick="toggleLang()" class="flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F7F5] hover:bg-[#E9E9E7] text-[#37352F] rounded text-sm font-bold transition-all border border-[#E9E9E7]">
+                    <i data-lucide="globe" size="16"></i>
+                    <span id="langToggleText">English</span>
+                </button>
+                
                 <div class="w-px h-5 bg-[#E9E9E7] mx-1 hidden md:block"></div>
+
+                <button id="clearBtn" class="px-3 py-1.5 text-[#9B9A97] hover:text-[#EB5757] hover:bg-[#FFF3F3] rounded text-sm font-medium transition-all">
+                    <span data-i18n="clearAll">مسح الكل</span>
+                </button>
                 <button onclick="addNewPage()" class="flex items-center gap-1.5 bg-white hover:bg-[#F7F7F5] text-[#37352F] px-4 py-2 rounded text-sm font-medium transition-all border border-[#E9E9E7] shadow-sm">
                     <i data-lucide="file-plus" size="16"></i>
-                    إضافة صفحة
+                    <span data-i18n="addPage">إضافة صفحة</span>
                 </button>
                 <button id="downloadBtn" class="flex items-center gap-1.5 bg-[#2F3437] hover:bg-[#191919] text-white px-5 py-2 rounded text-sm font-medium shadow-sm transition-all active:scale-95">
                     <i data-lucide="printer" size="16"></i>
-                    تصدير PDF
+                    <span data-i18n="exportPDF">تصدير PDF</span>
                 </button>
             </div>
         </header>
@@ -119,8 +138,8 @@
                     
                     <div class="bg-[#F7F7F5] px-5 py-3 border-b border-[#E9E9E7] flex justify-between items-center">
                         <div class="flex flex-col gap-0.5">
-                            <span class="font-bold text-sm flex items-center gap-2 text-[#37352F]">
-                                تعديل: صفحة <span id="pageLabel" class="text-[#37352F] font-bold">1</span>، خانة <span id="slotLabel" class="bg-white px-2 py-0.5 rounded border border-[#E9E9E7] text-[#37352F]">1</span>
+                            <span class="font-bold text-sm flex items-center gap-1.5 text-[#37352F]">
+                                <span data-i18n="editPageLabel">تعديل: صفحة</span> <span id="pageLabel" class="text-[#37352F] font-bold">1</span><span data-i18n="slotPrefixLabel">، خانة</span> <span id="slotLabel" class="bg-white px-2 py-0.5 rounded border border-[#E9E9E7] text-[#37352F]">1</span>
                             </span>
                         </div>
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount">المجموع: 6 خانات</span>
@@ -132,7 +151,7 @@
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label class="flex items-center gap-1.5 text-xs font-bold text-[#37352F]">
-                                    <span class="text-[#9B9A97]">1.</span> الصور السريرية
+                                    <span class="text-[#9B9A97]">1.</span> <span data-i18n="clinicalImages">الصور السريرية</span>
                                 </label>
                             </div>
                             
@@ -141,7 +160,7 @@
                             <div id="dropZone" class="relative group w-full h-28 rounded-md border border-dashed border-[#D3D3D1] bg-[#F7F7F5] flex flex-col items-center justify-center cursor-pointer hover:border-[#9B9A97] transition-all overflow-hidden">
                                 <div class="flex flex-col items-center relative z-10">
                                     <i data-lucide="image-plus" class="text-[#9B9A97] w-5 h-5 mb-2 group-hover:text-[#37352F] transition-colors"></i>
-                                    <span class="text-xs text-[#37352F] font-medium">انقر لإضافة الصور</span>
+                                    <span class="dz-text text-xs text-[#37352F] font-medium" data-i18n="clickToAdd">انقر لإضافة الصور</span>
                                 </div>
                                 <input type="file" id="fileInput" class="hidden" accept="image/*" multiple>
                             </div>
@@ -151,10 +170,9 @@
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label class="flex items-center gap-1.5 text-xs font-bold text-[#37352F]">
-                                    <span class="text-[#9B9A97]">2.</span> نص الأسئلة
+                                    <span class="text-[#9B9A97]">2.</span> <span data-i18n="questionsText">نص الأسئلة</span>
                                 </label>
                             </div>
-                            <!-- dir="auto" يحدد اتجاه النص تلقائياً بناءً على أول حرف (عربي أو إنجليزي) -->
                             <textarea id="qInput" dir="auto" class="w-full h-20 p-3 rounded-md border border-[#E9E9E7] bg-[#F7F7F5] outline-none text-sm font-semibold resize-none text-[#37352F] placeholder:text-[#D3D3D1]" placeholder="A) What is the diagnosis?&#10;ب) صف الأعراض الظاهرة في الصورة."></textarea>
                         </div>
 
@@ -162,16 +180,14 @@
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label class="flex items-center gap-1.5 text-xs font-bold text-[#37352F]">
-                                    <span class="text-[#9B9A97]">3.</span> الأجوبة (المربع الوردي)
+                                    <span class="text-[#9B9A97]">3.</span> <span data-i18n="answersText">الأجوبة (المربع الوردي)</span>
                                 </label>
                             </div>
-                            <!-- dir="auto" يحدد الاتجاه بذكاء لخلط اللغات -->
                             <textarea id="aInput" dir="auto" class="w-full h-20 p-3 rounded-md border border-[#F5E6E6] bg-[#FFF9F9] outline-none text-sm text-[#37352F] font-bold resize-none placeholder:text-[#E8C5C5]" placeholder="A) Iron deficiency anemia&#10;ب) فقر الدم بسبب نقص الحديد"></textarea>
                         </div>
 
                         <button id="nextBtn" class="w-full bg-[#2F3437] hover:bg-[#191919] text-white py-3 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm">
-                            <span>حفظ وتعديل الخانة التالية</span>
-                            <i data-lucide="arrow-left" size="16"></i>
+                            <!-- المحتوى يتم إنشاؤه عبر JS لتحديث الأيقونة بناء على اللغة -->
                         </button>
                     </div>
                 </div>
@@ -181,8 +197,8 @@
             <div class="lg:col-span-7 flex flex-col h-[calc(100vh-6rem)]">
                 <div class="flex justify-between items-end mb-3 shrink-0 px-1">
                     <div>
-                        <h3 class="text-sm font-bold text-[#37352F] mb-0.5">معاينة مساحة العمل التفاعلية</h3>
-                        <p class="text-[11px] text-[#9B9A97] font-medium">عرض حقيقي • يدعم العربية والإنجليزية بامتياز</p>
+                        <h3 class="text-sm font-bold text-[#37352F] mb-0.5" data-i18n="previewTitle">معاينة مساحة العمل التفاعلية</h3>
+                        <p class="text-[11px] text-[#9B9A97] font-medium" data-i18n="previewSubtitle">عرض حقيقي • يدعم العربية والإنجليزية بامتياز</p>
                     </div>
                 </div>
                 
@@ -194,10 +210,10 @@
             </div>
         </div>
 
-        <!-- تذييل الصفحة (Footer) -->
+        <!-- تذييل الصفحة -->
         <footer class="mt-8 pt-5 border-t border-[#E9E9E7] text-center" dir="ltr">
             <p class="text-sm text-[#9B9A97] font-medium" style="font-family: 'Inter', sans-serif;">
-                Added by Muhammad Saadoon | 
+                <span data-i18n="addedBy">Added by Muhammad Saadoon |</span>
                 <a href="https://t.me/anemd" target="_blank" rel="noopener noreferrer" class="text-[#37352F] hover:text-[#0088cc] font-bold transition-colors inline-flex items-center gap-1">
                     @anemd
                 </a>
@@ -210,6 +226,64 @@
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
         let dataStore = [];
+        let currentLang = 'ar';
+
+        const i18n = {
+            ar: {
+                title: "منشئ الملخصات الطبية",
+                subtitle: "يدعم اللغتين العربية والإنجليزية بذكاء • دقة تصدير WYSIWYG",
+                clearAll: "مسح الكل",
+                addPage: "إضافة صفحة",
+                exportPDF: "تصدير PDF",
+                editPageLabel: "تعديل: صفحة",
+                slotPrefixLabel: "، خانة",
+                totalSlots: "المجموع:",
+                clinicalImages: "الصور السريرية",
+                clickToAdd: "انقر لإضافة الصور",
+                addMore: "إضافة المزيد من الصور",
+                questionsText: "نص الأسئلة",
+                questionsPlaceholder: "A) What is the diagnosis?\nب) صف الأعراض الظاهرة في الصورة.",
+                answersText: "الأجوبة (المربع الوردي)",
+                answersPlaceholder: "A) Iron deficiency anemia\nب) فقر الدم بسبب نقص الحديد",
+                saveNext: "حفظ وتعديل الخانة التالية",
+                saveNewPage: "حفظ وإضافة صفحة جديدة",
+                previewTitle: "معاينة مساحة العمل التفاعلية",
+                previewSubtitle: "عرض حقيقي • يدعم العربية والإنجليزية بامتياز",
+                page: "صفحة",
+                addedBy: "تمت الإضافة بواسطة Muhammad Saadoon |",
+                confirmClear: "هل أنت متأكد من رغبتك في مسح كافة البيانات والعودة لصفحة واحدة فارغة؟",
+                exporting: "جاري التصدير...",
+                exportError: "حدث خطأ أثناء التصدير. يرجى المحاولة مرة أخرى.",
+                slotWord: "خانة"
+            },
+            en: {
+                title: "Medical Summary Builder",
+                subtitle: "Smart Bilingual Support • WYSIWYG PDF Export",
+                clearAll: "Clear All",
+                addPage: "Add Page",
+                exportPDF: "Export PDF",
+                editPageLabel: "Editing: Page",
+                slotPrefixLabel: ", Slot",
+                totalSlots: "Total:",
+                clinicalImages: "Clinical Images",
+                clickToAdd: "Click to add images",
+                addMore: "Add more images",
+                questionsText: "Questions Text",
+                questionsPlaceholder: "A) What is the diagnosis?\nB) Describe the findings.",
+                answersText: "Answers (Pink Box)",
+                answersPlaceholder: "A) Iron deficiency anemia\nB) Microcytic, hypochromic",
+                saveNext: "Save & Edit Next Slot",
+                saveNewPage: "Save & Add New Page",
+                previewTitle: "Interactive Workspace Preview",
+                previewSubtitle: "Real-time view • Excellent Arabic & English Support",
+                page: "Page",
+                addedBy: "Added by Muhammad Saadoon |",
+                confirmClear: "Are you sure you want to clear all data and reset to a single empty page?",
+                exporting: "Exporting...",
+                exportError: "An error occurred during export. Please try again.",
+                slotWord: "Slot"
+            }
+        };
 
         const ui = {
             file: document.getElementById('fileInput'),
@@ -225,6 +299,29 @@
             scrollArea: document.getElementById('previewScrollArea')
         };
 
+        const dummyDoc = new jsPDF('p', 'mm', 'a4');
+
+        // Language Toggle Logic
+        function toggleLang() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = currentLang;
+            
+            document.getElementById('langToggleText').textContent = currentLang === 'ar' ? 'English' : 'العربية';
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[currentLang][key]) {
+                    el.textContent = i18n[currentLang][key];
+                }
+            });
+
+            document.getElementById('qInput').setAttribute('placeholder', i18n[currentLang].questionsPlaceholder);
+            document.getElementById('aInput').setAttribute('placeholder', i18n[currentLang].answersPlaceholder);
+            
+            refresh();
+        }
+
         addNewPage(false);
 
         function addNewPage(shouldRefresh = true) {
@@ -239,7 +336,6 @@
             }
         }
 
-        // تحويل النص للحماية من أكواد HTML وعرضه بسلاسة
         function escapeHtml(text) {
             if (!text) return '';
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -265,7 +361,7 @@
 
             ui.pageLabel.textContent = currentPage;
             ui.slotLabel.textContent = currentSlotOnPage;
-            ui.totalCount.textContent = `المجموع: ${dataStore.length} خانات`;
+            ui.totalCount.textContent = `${i18n[currentLang].totalSlots} ${dataStore.length}`;
             
             ui.q.value = item.questions;
             ui.a.value = item.answers;
@@ -274,7 +370,7 @@
                 ui.thumbContainer.classList.remove('hidden');
                 ui.dropZone.classList.add('h-14');
                 ui.dropZone.classList.remove('h-28');
-                ui.dropZone.querySelector('span:last-of-type').textContent = "إضافة المزيد من الصور";
+                ui.dropZone.querySelector('.dz-text').textContent = i18n[currentLang].addMore;
                 
                 ui.thumbContainer.innerHTML = item.images.map((img, i) => `
                     <div class="relative shrink-0 w-12 h-12 bg-white rounded border border-[#E9E9E7] p-1 group">
@@ -288,9 +384,10 @@
                 ui.thumbContainer.classList.add('hidden');
                 ui.dropZone.classList.add('h-28');
                 ui.dropZone.classList.remove('h-14');
-                ui.dropZone.querySelector('span:last-of-type').textContent = "انقر لإضافة الصور";
+                ui.dropZone.querySelector('.dz-text').textContent = i18n[currentLang].clickToAdd;
             }
 
+            const textMaxWidthMM = (210 / 2) - 22; 
             const totalPages = dataStore.length / 6;
             let fullHtml = '';
 
@@ -301,9 +398,11 @@
                     const globalIdx = (p * 6) + i;
                     const s = dataStore[globalIdx];
                     
-                    // استخدام الستايل المباشر بالبيكسل لضمان دقة 100% في التصدير
                     let borderStyle = 'border-color: #E9E9E7; border-style: solid; border-width: 0; ';
-                    if (i % 2 === 0) borderStyle += 'border-left-width: 2px; '; // في الواجهة العربية الخانة الزوجية تكون على اليمين فنضع الحد على اليسار
+                    if (i % 2 === 0) {
+                        if(currentLang === 'ar') borderStyle += 'border-left-width: 2px; ';
+                        else borderStyle += 'border-right-width: 2px; ';
+                    }
                     if (i < 4) borderStyle += 'border-bottom-width: 2px; ';
                     
                     let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
@@ -318,7 +417,7 @@
                         });
                         imgHtml += `</div>`;
                     } else {
-                        imgHtml = `<div style="flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 0;"><div style="font-size: 11px; color: #D3D3D1; font-weight: bold; padding: 4px 10px; border-radius: 4px; border: 1px solid #E9E9E7; background: white;">ص${p+1} - خانة ${i+1}</div></div>`;
+                        imgHtml = `<div style="flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; min-height: 0;"><div style="font-size: 11px; color: #D3D3D1; font-weight: bold; padding: 4px 10px; border-radius: 4px; border: 1px solid #E9E9E7; background: white; text-transform: uppercase;">${currentLang === 'en' ? 'P' : 'ص'}${p+1} - ${i18n[currentLang].slotWord} ${i+1}</div></div>`;
                     }
 
                     const qHtml = s.questions ? escapeHtml(s.questions) : '';
@@ -328,17 +427,19 @@
                         <div ${activeIdAttr} onclick="goto(${globalIdx})" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${borderStyle} padding: 28px; box-sizing: border-box;">
                             ${imgHtml}
                             <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%; flex-shrink: 0; font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;">
-                                ${s.questions ? `<div dir="auto" style="font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word;">${qHtml}</div>` : ''}
-                                ${s.answers ? `<div dir="auto" style="background-color: #FBE4E4; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word;">${aHtml}</div>` : ''}
+                                ${s.questions ? `<div dir="auto" style="font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word; text-align: start;">${qHtml}</div>` : ''}
+                                ${s.answers ? `<div dir="auto" style="background-color: #FBE4E4; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word; text-align: start;">${aHtml}</div>` : ''}
                             </div>
                         </div>
                     `;
                 }
 
+                const pageLabelPos = currentLang === 'ar' ? `right: -32px; transform: rotate(90deg);` : `left: -32px; transform: rotate(-90deg);`;
+
                 fullHtml += `
                     <div class="w-full flex flex-col items-center group relative">
-                        <div class="absolute -right-8 top-0 bottom-0 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span class="text-[10px] font-bold text-[#9B9A97] rotate-[90deg] whitespace-nowrap">صفحة ${p + 1}</span>
+                        <div class="absolute top-0 bottom-0 flex items-center opacity-0 group-hover:opacity-100 transition-opacity" style="${pageLabelPos}">
+                            <span class="text-[10px] font-bold text-[#9B9A97] whitespace-nowrap uppercase">${i18n[currentLang].page} ${p + 1}</span>
                         </div>
                         <div class="a4-wrapper">
                             <div class="a4-page a4-page-scaled" id="page-${p}">
@@ -350,13 +451,14 @@
             }
 
             ui.grid.innerHTML = fullHtml;
-            scalePages(); // تحديث الحجم بعد الرسم
+            scalePages(); 
             lucide.createIcons();
             
+            const arrowIcon = currentLang === 'ar' ? 'arrow-left' : 'arrow-right';
             if (activeIdx === dataStore.length - 1) {
-                ui.next.innerHTML = `<span>حفظ وإضافة صفحة جديدة</span> <i data-lucide="file-plus" size="16"></i>`;
+                ui.next.innerHTML = `<span>${i18n[currentLang].saveNewPage}</span> <i data-lucide="file-plus" size="16"></i>`;
             } else {
-                ui.next.innerHTML = `<span>حفظ وتعديل الخانة التالية</span> <i data-lucide="arrow-left" size="16"></i>`;
+                ui.next.innerHTML = `<span>${i18n[currentLang].saveNext}</span> <i data-lucide="${arrowIcon}" size="16"></i>`;
             }
             lucide.createIcons();
         }
@@ -412,30 +514,29 @@
         };
 
         document.getElementById('clearBtn').onclick = () => {
-            if(confirm("هل أنت متأكد من رغبتك في مسح كافة البيانات والعودة لصفحة واحدة فارغة؟")) {
+            if(confirm(i18n[currentLang].confirmClear)) {
                 dataStore = [];
                 activeIdx = 0;
                 addNewPage(true);
             }
         };
 
-        // --- محرك توليد PDF الدقيق للغة العربية والإنجليزية ---
         async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true;
             const original = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner"></div> <span>جاري التصدير...</span>`;
+            btn.innerHTML = `<div class="spinner"></div> <span data-i18n="exporting">${i18n[currentLang].exporting}</span>`;
 
             try {
                 const doc = new jsPDF('p', 'mm', 'a4');
                 const totalPages = dataStore.length / 6;
 
-                // إنشاء حاوية مخفية لمعالجة الصفحات بدقة قبل تصويرها
                 const offscreen = document.createElement('div');
                 offscreen.style.position = 'absolute';
                 offscreen.style.top = '-9999px';
-                offscreen.style.right = '-9999px';
-                offscreen.dir = 'rtl'; // لضمان بقاء اتجاه الصفحة صحيحاً أثناء التصدير
+                offscreen.style.right = currentLang === 'ar' ? '-9999px' : 'auto';
+                offscreen.style.left = currentLang === 'en' ? '-9999px' : 'auto';
+                offscreen.dir = document.documentElement.dir; 
                 document.body.appendChild(offscreen);
 
                 for (let p = 0; p < totalPages; p++) {
@@ -444,25 +545,22 @@
                     const originalPage = document.getElementById(`page-${p}`);
                     const clone = originalPage.cloneNode(true);
                     
-                    // إزالة تغيير الحجم لضمان دقة كاملة
                     clone.style.transform = 'none';
                     clone.style.position = 'relative';
                     clone.style.right = 'auto';
+                    clone.style.left = 'auto';
                     clone.classList.remove('a4-page-scaled');
                     
-                    // إخفاء مؤشر الاختيار (الحد الأزرق) من الـ PDF
                     const activeCells = clone.querySelectorAll('.active-cell');
                     activeCells.forEach(cell => cell.classList.remove('active-cell', 'bg-[#FAFAFA]'));
 
                     offscreen.innerHTML = '';
                     offscreen.appendChild(clone);
 
-                    // انتظار قصير لضمان اكتمال تحميل عناصر المتصفح
                     await new Promise(r => setTimeout(r, 50));
 
-                    // تصوير الصفحة عبر HTML2Canvas لدعم مثالي للعربي والـ Emojis
                     const canvas = await html2canvas(clone, {
-                        scale: 2, // جودة عالية
+                        scale: 2, 
                         useCORS: true,
                         backgroundColor: '#ffffff',
                         logging: false
@@ -477,7 +575,7 @@
                 
             } catch (error) {
                 console.error(error);
-                alert("حدث خطأ أثناء التصدير. يرجى المحاولة مرة أخرى.");
+                alert(i18n[currentLang].exportError);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = original;
@@ -489,3 +587,4 @@
     </script>
 </body>
 </html>
+
