@@ -143,7 +143,8 @@
                     </div>
 
                     <!-- شريط إعدادات الألوان والخطوط (Styling Bar) -->
-                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex justify-between items-center">
+                    <!-- THE FIX: Changed 'justify-between' to 'gap-x-10' so they have strict spacing -->
+                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-10 gap-y-4">
                         <div class="flex items-center gap-3">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider" data-i18n="boxColor">Box Color:</span>
                             <div class="flex gap-2" id="colorSwatches">
@@ -636,14 +637,14 @@
                     await new Promise(r => setTimeout(r, 50));
 
                     const canvas = await html2canvas(clone, {
-                        scale: 2, 
+                        scale: 4, // Increased from 2 to 4 for high-resolution, crisp text
                         useCORS: true,
                         backgroundColor: '#ffffff',
                         logging: false
                     });
 
-                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                    doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0); // Maximize JPEG quality
+                    doc.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST'); // 'FAST' helps keep the PDF file size manageable
                 }
 
                 document.body.removeChild(offscreen);
@@ -663,3 +664,5 @@
     </script>
 </body>
 </html>
+
+
