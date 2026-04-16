@@ -60,7 +60,6 @@
             transform-origin: top left;
         }
         
-        /* Auto Fit uses relative container instead of grid */
         .a4-page.auto-fit-mode {
             display: block; 
         }
@@ -115,43 +114,57 @@
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount"></span>
                     </div>
 
-                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-8 gap-y-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Theme:</span>
-                            <div class="flex gap-1.5" id="colorSwatches"></div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Font:</span>
-                            <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                <option value="sans">Modern</option>
-                                <option value="serif">Classic</option>
-                                <option value="mono">Typewriter</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Text Size:</span>
-                            <select id="textSizeSelect" onchange="changeTextSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                <option value="8">Small</option>
-                                <option value="10" selected>Normal</option>
-                                <option value="12">Large</option>
-                                <option value="14">Huge</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Image Max Size:</span>
-                            <select id="imgSizeSelect" onchange="changeImgSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                <option value="60">Small</option>
-                                <option value="100" selected>Normal</option>
-                                <option value="150">Large</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center gap-4 w-full pt-2 border-t border-[#E9E9E7]">
+                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-col gap-y-4">
+                        
+                        <!-- Row 1: Aesthetics -->
+                        <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
                             <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Grid Columns:</span>
+                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Theme:</span>
+                                <div class="flex gap-1.5" id="colorSwatches"></div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Font:</span>
+                                <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                    <option value="sans">Modern</option>
+                                    <option value="serif">Classic</option>
+                                    <option value="mono">Typewriter</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Manual Content Sizing -->
+                        <div class="flex flex-wrap items-center gap-x-8 gap-y-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Text Size:</span>
+                                <select id="textSizeSelect" onchange="changeTextSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                    <option value="8">Small</option>
+                                    <option value="10" selected>Normal</option>
+                                    <option value="12">Large</option>
+                                    <option value="14">Huge</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Image Size:</span>
+                                <select id="imgSizeSelect" onchange="changeImgSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
+                                    <option value="60">Small</option>
+                                    <option value="100" selected>Normal</option>
+                                    <option value="150">Large</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Layout & Auto Fit -->
+                        <div class="flex flex-wrap items-center gap-4 pt-2 border-t border-[#F7F7F5]">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Grid:</span>
                                 <select id="gridSelect" onchange="changeGrid(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="1">1 Col</option>
-                                    <option value="2" selected>2 Cols</option>
-                                    <option value="3">3 Cols</option>
+                                    <option value="1">1 Slot</option>
+                                    <option value="2">2 Slots</option>
+                                    <option value="3">3 Slots</option>
+                                    <option value="4">4 Slots</option>
+                                    <option value="6" selected>6 Slots</option>
+                                    <option value="8">8 Slots</option>
+                                    <option value="9">9 Slots</option>
                                 </select>
                             </div>
                             
@@ -209,8 +222,7 @@
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
         let dataStore = [];
-        let colsPerPage = 2; // Default Grid columns
-        let slotsPerPage = 6; // Standard mode default slots per page
+        let slotsPerPage = 6; 
         
         let activeTheme = 'pink';
         let activeFont = 'sans';
@@ -255,13 +267,25 @@
             refreshAll();
         }
 
+        function getGridLayout(slots) {
+            let cols = 1, rows = 1;
+            if (slots === 4) { cols = 2; rows = 2; }
+            else if (slots === 6) { cols = 2; rows = 3; }
+            else if (slots === 8) { cols = 2; rows = 4; }
+            else if (slots === 9) { cols = 3; rows = 3; }
+            else if (slots > 1) { cols = 1; rows = slots; }
+            return { cols, rows };
+        }
+
         // --- NEW INDEPENDENT COLUMNS ALGORITHM (MASONRY) ---
         function calculateIndependentLayout() {
             const pages = [];
             let currentPageSlots = [];
             const pW = 210, pH = 297, pad = 8;
-            const cW = pW / colsPerPage;
-            let colY = new Array(colsPerPage).fill(0);
+            
+            const { cols } = getGridLayout(slotsPerPage);
+            const cW = pW / cols;
+            let colY = new Array(cols).fill(0);
 
             dummyDoc.setFont(fonts[activeFont].jspdf, "bold");
             dummyDoc.setFontSize(activeFontSize);
@@ -271,7 +295,7 @@
 
             for (let i = 0; i < dataStore.length; i++) {
                 const s = dataStore[i];
-                const colIdx = i % colsPerPage;
+                const colIdx = i % cols;
                 
                 let reqH = pad * 2; 
                 let hasContent = false;
@@ -299,7 +323,7 @@
 
                 // 2. Add Exactly 1 Line Gap between Image and Text
                 if (hasContent && (s.questions || s.answers)) {
-                    reqH += activeFontSize * 0.35; // 0.35mm per pt represents ~1 line spacing
+                    reqH += activeFontSize * 0.35; 
                 }
 
                 // 3. Questions
@@ -329,11 +353,11 @@
                 if (colY[colIdx] + reqH > pH) rowWillOverflow = true;
 
                 // When a full row is evaluated (or end of data)
-                if (colIdx === colsPerPage - 1 || i === dataStore.length - 1) {
+                if (colIdx === cols - 1 || i === dataStore.length - 1) {
                     if (rowWillOverflow && currentPageSlots.length > 0) {
                         pages.push(currentPageSlots);
                         currentPageSlots = [];
-                        colY = new Array(colsPerPage).fill(0);
+                        colY = new Array(cols).fill(0);
                     }
                     
                     // Assign actual Y positions independently
@@ -365,13 +389,11 @@
         function changeImgSize(val) { activeImgSize = parseInt(val); refreshAll(); }
 
         function changeGrid(val) {
-            colsPerPage = parseInt(val);
-            slotsPerPage = colsPerPage * 3; // Default strict rows = 3
-            
+            slotsPerPage = parseInt(val);
             const totalItems = dataStore.length;
-            const remainder = totalItems % colsPerPage;
+            const remainder = totalItems % slotsPerPage;
             if (remainder !== 0) {
-                const needed = colsPerPage - remainder;
+                const needed = slotsPerPage - remainder;
                 for (let i = 0; i < needed; i++) {
                     dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
                 }
@@ -381,7 +403,8 @@
         }
 
         function addNewPage(shouldRefresh = true) {
-            let addCount = isAutoFit ? colsPerPage : slotsPerPage;
+            const { cols } = getGridLayout(slotsPerPage);
+            let addCount = isAutoFit ? cols : slotsPerPage;
             for(let i = 0; i < addCount; i++) {
                 dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
             }
@@ -475,6 +498,7 @@
             }
 
             let fullHtml = '';
+            const { cols, rows } = getGridLayout(slotsPerPage);
             
             if (isAutoFit) {
                 // --- RENDER MASONRY AUTO-FIT HTML ---
@@ -489,19 +513,17 @@
                         let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
                         let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
                         
-                        // Absolute positioning mapped accurately from mm to percentage
                         let t = (slot.y / 297) * 100;
                         let l = (slot.x / 210) * 100;
                         let w = (slot.w / 210) * 100;
                         let h = (slot.reqH / 297) * 100;
                         
                         let borderStyle = 'border-bottom: 2px solid #E9E9E7; ';
-                        if (slot.colIdx < colsPerPage - 1) borderStyle += 'border-right: 2px solid #E9E9E7; ';
+                        if (slot.colIdx < cols - 1) borderStyle += 'border-right: 2px solid #E9E9E7; ';
                         
                         let imgHtml = '';
                         if (s.images.length > 0) {
                             let iCols = s.images.length === 1 ? 1 : 2;
-                            // 1.4 multiplier transforms PDF font scale closely to HTML rems
                             let gapMargin = activeFontSize * 1.4; 
                             imgHtml = `<div style="width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: ${gapMargin}px;">`;
                             s.images.forEach(img => imgHtml += `<div style="width: 100%; display: flex; justify-content: center;"><img src="${img}" style="max-width: 100%; max-height: ${activeImgSize * 3.78}px; object-fit: contain;" /></div>`);
@@ -534,12 +556,11 @@
                 
             } else {
                 // --- RENDER STRICT GRID HTML ---
-                const rows = slotsPerPage / colsPerPage;
                 const totalPages = Math.ceil(dataStore.length / slotsPerPage);
 
                 for (let p = 0; p < totalPages; p++) {
                     let pageSlotsHtml = '';
-                    let gridStyle = `display: grid; grid-template-columns: repeat(${colsPerPage}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`;
+                    let gridStyle = `display: grid; grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`;
 
                     for (let i = 0; i < slotsPerPage; i++) {
                         const globalIdx = (p * slotsPerPage) + i;
@@ -547,8 +568,8 @@
                         const s = dataStore[globalIdx];
                         
                         let border = 'border-color: #E9E9E7; border-style: solid; border-width: 0;';
-                        if (colsPerPage > 1 && (i % colsPerPage === 0)) border += ' border-right-width: 2px;';
-                        if (rows > 1 && i < (slotsPerPage - colsPerPage)) border += ' border-bottom-width: 2px;';
+                        if (cols > 1 && (i % cols < cols - 1)) border += ' border-right-width: 2px;';
+                        if (rows > 1 && i < (slotsPerPage - cols)) border += ' border-bottom-width: 2px;';
 
                         let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
                         let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
@@ -612,30 +633,28 @@
                 const doc = new jsPDF('p', 'mm', 'a4');
                 const pW = 210, pH = 297, pad = 8;
                 
+                const { cols, rows } = getGridLayout(slotsPerPage);
                 const rgb = themes[activeTheme].rgb, fName = fonts[activeFont].jspdf;
 
                 if (isAutoFit) {
                     // PDF RENDER: MASONRY AUTO FIT
                     const pages = calculateIndependentLayout();
-                    const cW = pW / colsPerPage;
+                    const cW = pW / cols;
                     
                     pages.forEach((pageSlots, pIdx) => {
                         if (pIdx > 0) doc.addPage();
                         
-                        // Draw full vertical column dividers
                         doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
-                        for(let c=1; c<colsPerPage; c++) doc.line(c*cW, 0, c*cW, pH); 
+                        for(let c=1; c<cols; c++) doc.line(c*cW, 0, c*cW, pH); 
                         
                         pageSlots.forEach(slot => {
                             const s = slot.data;
                             if (!s) return;
                             
-                            // Draw bottom horizontal border per independent cell
                             doc.line(slot.x, slot.y + slot.reqH, slot.x + slot.w, slot.y + slot.reqH);
 
                             let currentY = slot.y + pad;
                             
-                            // 1. Draw Images
                             if (s.images.length > 0) {
                                 let imgCols = s.images.length === 1 ? 1 : 2;
                                 let imgRows = Math.ceil(s.images.length / imgCols);
@@ -668,7 +687,6 @@
                                 currentY += (maxImgH * imgRows) + (imgRows - 1)*gap;
                             }
 
-                            // 2. Exact 1 Line Gap
                             if (s.images.length > 0 && (s.questions || s.answers)) {
                                 currentY += activeFontSize * 0.35; 
                             }
@@ -676,7 +694,6 @@
                             doc.setFont(fName, "bold");
                             doc.setFontSize(activeFontSize);
 
-                            // 3. Draw Questions
                             if (s.questions) {
                                 let qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
                                 doc.setTextColor(55, 53, 47);
@@ -685,10 +702,9 @@
                             }
 
                             if (s.questions && s.answers) {
-                                currentY += activeFontSize * 0.2; // Small gap between Q and A
+                                currentY += activeFontSize * 0.2;
                             }
 
-                            // 4. Draw Answers Box
                             if (s.answers) {
                                 let aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
                                 let aBoxH = (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6);
@@ -701,23 +717,21 @@
                     });
                 } else {
                     // PDF RENDER: STRICT GRID
-                    const cW = pW / colsPerPage;
-                    const rows = slotsPerPage / colsPerPage;
-                    const cH = pH / rows;
+                    const cW = pW / cols, cH = pH / rows;
                     const totalPages = Math.ceil(dataStore.length / slotsPerPage);
 
                     for (let p = 0; p < totalPages; p++) {
                         if (p > 0) doc.addPage();
                         
                         doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
-                        for(let c=1; c<colsPerPage; c++) doc.line(c*cW, 0, c*cW, pH);
+                        for(let c=1; c<cols; c++) doc.line(c*cW, 0, c*cW, pH);
                         for(let r=1; r<rows; r++) doc.line(0, r*cH, pW, r*cH);
 
                         for (let i = 0; i < slotsPerPage; i++) {
                             const globalIdx = (p * slotsPerPage) + i;
                             if (globalIdx >= dataStore.length) continue;
                             const s = dataStore[globalIdx];
-                            const x = (i % colsPerPage) * cW, y = Math.floor(i / colsPerPage) * cH;
+                            const x = (i % cols) * cW, y = Math.floor(i / cols) * cH;
                             
                             if (!s) continue;
                             let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
