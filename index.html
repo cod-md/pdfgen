@@ -99,16 +99,16 @@
                     <!-- Boxes injected here -->
                 </div>
 
-                <div class="mt-6 p-5 bg-amber-50 rounded-2xl border border-amber-100 flex gap-4">
-                    <div class="bg-amber-100 text-amber-600 p-2 rounded-xl h-fit">
-                        <i data-lucide="check-square" size="20"></i>
+                <div class="mt-6 p-5 bg-emerald-50 rounded-2xl border border-emerald-100 flex gap-4">
+                    <div class="bg-emerald-100 text-emerald-600 p-2 rounded-xl h-fit">
+                        <i data-lucide="shield-check" size="20"></i>
                     </div>
-                    <div class="text-xs text-amber-800 leading-relaxed">
-                        <p class="font-bold mb-1">Standardized Vertical Alignment Active:</p>
+                    <div class="text-xs text-emerald-800 leading-relaxed">
+                        <p class="font-bold mb-1">Layout Constraints Active (Overlap Fixed):</p>
                         <ul class="list-disc ml-4 space-y-1">
-                            <li>Images will be centered in the top half.</li>
-                            <li>Questions will <b>always</b> start precisely in the middle.</li>
-                            <li>Answer boxes will <b>always</b> be locked to the bottom section.</li>
+                            <li>Images are strictly constrained to a max height of <b>45mm</b>.</li>
+                            <li>Questions start strictly at <b>56mm</b> (safely below the image).</li>
+                            <li>Answer boxes are locked at <b>78mm</b> (at the bottom).</li>
                         </ul>
                     </div>
                 </div>
@@ -120,7 +120,7 @@
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
         let dataStore = Array.from({ length: 6 }, (_, i) => ({
-            id: i, image: null, imgW: 0, imgH: 0, questions: "", answers: "", filled: false
+            id: i, image: null, questions: "", answers: "", filled: false
         }));
 
         const ui = {
@@ -182,14 +182,8 @@
             if (f) {
                 const r = new FileReader();
                 r.onload = (ev) => {
-                    const i = new Image();
-                    i.onload = () => {
-                        dataStore[activeIdx].image = ev.target.result;
-                        dataStore[activeIdx].imgW = i.width;
-                        dataStore[activeIdx].imgH = i.height;
-                        refresh();
-                    };
-                    i.src = ev.target.result;
+                    dataStore[activeIdx].image = ev.target.result;
+                    refresh();
                 };
                 r.readAsDataURL(f);
             }
@@ -212,7 +206,7 @@
             }
         };
 
-        // PDF Generation with FIXED ANCHOR POINTS
+        // --- CORRECTED PDF GENERATION ENGINE ---
         async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true;
@@ -224,7 +218,7 @@
             const cW = pW / 2, cH = pH / 3;
             const pad = 12;
 
-            // Lines
+            // Draw divider lines
             doc.setDrawColor(0);
             doc.setLineWidth(0.4);
             doc.line(cW, 0, cW, pH);
@@ -234,41 +228,66 @@
             for (let i = 0; i < 6; i++) {
                 const s = dataStore[i];
                 const col = i % 2, row = Math.floor(i / 2);
-                const x = col * cW, y = row * cH;
+                
+                // Top-Left corner coordinates for this specific cell
+                const x = col * cW;
+                const y = row * cH;
 
-                // 1. IMAGE ZONE (Top: y+10 to y+45)
+                // 1. IMAGE ZONE (Strict Max Height: 45mm, Start: y+5)
                 if (s.image) {
-                    const maxW = cW - (pad * 2);
-                    const maxH = 38; // 38mm height limit
-                    let fW = maxW, fH = (s.imgH / s.imgW) * fW;
-                    if (fH > maxH) { fH = maxH; fW = (s.imgW / s.imgH) * fH; }
-                    const centerX = x + (cW - fW) / 2;
-                    doc.addImage(s.image, 'JPEG', centerX, y + 8, fW, fH, undefined, 'FAST');
+                    try {
+                        // Let jsPDF read native properties to calculate precise aspect ratio
+                        const imgProps = doc.getImageProperties(s.image);
+                        const imgRatio = imgProps.height / imgProps.width;
+                        
+                        const maxW = cW - (pad * 2);
+                        const maxH = 45; // Hard limit so it never touches the text at y+56
+                        
+                        let finalW = maxW;
+                        let finalH = finalW * imgRatio;
+                        
+                        // If scaled height still exceeds maxH, scale by height instead
+                        if (finalH > maxH) {
+                            finalH = maxH;
+                            finalW = finalH / imgRatio;
+                        }
+                        
+                        // Center horizontally
+                        const centerX = x + (cW - finalW) / 2;
+                        
+                        doc.addImage(s.image, 'JPEG', centerX, y + 5, finalW, finalH, undefined, 'FAST');
+                    } catch(err) {
+                        console.error("Error drawing image in slot", i, err);
+                    }
                 }
 
-                // 2. QUESTION ZONE (Strictly anchored at y+50)
-                const qY = y + 52; 
+                // 2. QUESTION ZONE (Strict Start: y+56)
+                // Since Max Image Height is 45mm (starting at y+5), the lowest the image can ever go is y+50.
+                // Starting questions at y+56 guarantees a 6mm buffer space.
+                const qY = y + 56; 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(10);
-                doc.setTextColor(0);
+                doc.setTextColor(0, 0, 0);
                 if (s.questions) {
                     const lines = doc.splitTextToSize(s.questions, cW - (pad * 2));
                     doc.text(lines, x + pad, qY);
                 }
 
-                // 3. ANSWER ZONE (Strictly anchored at y+78)
+                // 3. ANSWER ZONE (Strict Start: y+78)
                 const aY = y + 78;
                 if (s.answers) {
                     const lines = doc.splitTextToSize(s.answers, cW - (pad * 3));
-                    const boxH = 15; // Standardized height
-                    doc.setFillColor(255, 215, 215);
+                    const boxH = 15; // Standard 15mm height for the pink box
+                    
+                    doc.setFillColor(255, 215, 215); // Light Pink
                     doc.rect(x + pad, aY, cW - (pad * 2), boxH, 'F');
+                    
                     doc.setFont("helvetica", "bold");
                     doc.text(lines, x + pad + 3, aY + 5);
                 }
             }
 
-            doc.save(`Study_Sheet_${Date.now()}.pdf`);
+            doc.save(`Medical_Sheet_${Date.now()}.pdf`);
             btn.disabled = false;
             btn.innerHTML = original;
             lucide.createIcons();
@@ -279,5 +298,6 @@
     </script>
 </body>
 </html>
+
 
 ```
