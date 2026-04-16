@@ -1,4 +1,4 @@
-div ```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,24 +22,22 @@ div ```html
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Custom scrollbars */
         .thumb-scroll::-webkit-scrollbar { height: 6px; }
         .thumb-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         /* A4 Page Styling */
         .a4-page {
-            aspect-ratio: 1 / 1.4142; /* Standard A4 paper ratio */
+            aspect-ratio: 1 / 1.4142;
             background-color: white;
             width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: repeat(3, 1fr);
             border: 1px solid #000;
-            container-type: inline-size; /* Enables absolute mm-accurate scaling */
+            container-type: inline-size;
         }
         
-        /* Active Compartment Outline */
         .active-cell::after {
             content: '';
             position: absolute;
@@ -48,25 +46,34 @@ div ```html
             background-color: rgba(59, 130, 246, 0.05);
             pointer-events: none;
         }
+
+        /* Hide scrollbar for preview area but allow scrolling */
+        .preview-scroll::-webkit-scrollbar { width: 6px; }
+        .preview-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div>
                 <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                    <i data-lucide="file-text" class="text-blue-600 w-8 h-8"></i>
-                    A4 Sheet Builder
+                    <i data-lucide="layers" class="text-blue-600 w-8 h-8"></i>
+                    Multi-Page Sheet Builder
                 </h1>
-                <p class="text-slate-500 text-sm mt-1">Live A4 Preview • Multiple Images • Bottom-Anchored Text</p>
+                <p class="text-slate-500 text-sm mt-1 font-medium">Create unlimited A4 pages with perfect formatting.</p>
             </div>
-            <div class="flex items-center gap-4">
-                <button id="clearBtn" class="text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors">Clear All</button>
-                <button id="downloadBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
+            <div class="flex items-center gap-3 flex-wrap">
+                <button id="clearBtn" class="px-4 py-2 text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-bold transition-colors border border-transparent hover:border-rose-100">Clear All</button>
+                <div class="w-px h-8 bg-slate-200 mx-2 hidden md:block"></div>
+                <button onclick="addNewPage()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-bold transition-all active:scale-95 border border-slate-300">
+                    <i data-lucide="file-plus-2" size="18"></i>
+                    Add New Page
+                </button>
+                <button id="downloadBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
                     <i data-lucide="printer" size="18"></i>
-                    Export A4 PDF
+                    Export PDF
                 </button>
             </div>
         </header>
@@ -75,13 +82,13 @@ div ```html
             
             <!-- EDITOR PANEL (Left - 5 cols) -->
             <div class="lg:col-span-5 flex flex-col gap-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-8">
+                <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200 overflow-hidden sticky top-8">
                     <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
                         <span class="font-bold text-sm tracking-widest uppercase flex items-center gap-2">
                             <i data-lucide="edit-3" size="16"></i>
-                            Editing Slot <span id="slotLabel" class="bg-blue-500 px-2 py-0.5 rounded text-white ml-1">1</span>
+                            Editing: Page <span id="pageLabel" class="text-blue-400">1</span>, Slot <span id="slotLabel" class="bg-blue-500 px-2 py-0.5 rounded text-white ml-1">1</span>
                         </span>
-                        <div class="flex gap-1" id="navDots"></div>
+                        <span class="text-[10px] text-slate-400 font-bold" id="totalSlotsCount">Total: 6 slots</span>
                     </div>
 
                     <div class="p-6 space-y-6">
@@ -92,10 +99,7 @@ div ```html
                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Clinical Images</label>
                             </div>
                             
-                            <!-- Thumbnail Area -->
-                            <div id="thumbContainer" class="hidden w-full bg-slate-50 border border-slate-200 rounded-xl p-2 mb-2 flex gap-2 overflow-x-auto thumb-scroll">
-                                <!-- Thumbs injected here -->
-                            </div>
+                            <div id="thumbContainer" class="hidden w-full bg-slate-50 border border-slate-200 rounded-xl p-2 mb-2 flex gap-2 overflow-x-auto thumb-scroll"></div>
 
                             <div id="dropZone" class="relative w-full h-32 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all">
                                 <div class="flex flex-col items-center">
@@ -122,7 +126,7 @@ div ```html
                             <textarea id="aInput" class="w-full h-24 p-4 rounded-xl border border-rose-100 bg-rose-50/50 focus:bg-white focus:ring-2 focus:ring-rose-100 outline-none transition-all text-sm text-rose-900 font-bold resize-none leading-relaxed" placeholder="A) Iron deficiency anemia"></textarea>
                         </div>
 
-                        <button id="nextBtn" class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-slate-200">
+                        <button id="nextBtn" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95">
                             Save & Edit Next Slot
                             <i data-lucide="arrow-right" size="18"></i>
                         </button>
@@ -131,21 +135,20 @@ div ```html
             </div>
 
             <!-- PREVIEW PANEL (Right - 7 cols) -->
-            <div class="lg:col-span-7">
-                <div class="flex justify-between items-end mb-4">
+            <div class="lg:col-span-7 flex flex-col h-[calc(100vh-8rem)]">
+                <div class="flex justify-between items-end mb-4 shrink-0">
                     <div>
-                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-1">Live A4 Paper Preview</h3>
-                        <p class="text-[11px] text-slate-500 font-medium">Click anywhere on the paper to edit that compartment.</p>
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-1">Live Multi-Page Preview</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">Scroll down to see all pages. Click any slot to edit.</p>
                     </div>
                 </div>
                 
-                <!-- REALISTIC A4 RENDER CONTAINER -->
-                <div class="bg-slate-200/50 p-4 sm:p-8 rounded-3xl border border-slate-200 flex justify-center">
-                    <div id="gridPreview" class="a4-page">
-                        <!-- A4 Cells injected via JS -->
+                <!-- SCROLLABLE A4 RENDER CONTAINER -->
+                <div id="previewScrollArea" class="bg-slate-200/50 p-4 sm:p-8 rounded-3xl border border-slate-200 overflow-y-auto preview-scroll flex-1">
+                    <div id="gridPreview" class="flex flex-col gap-10 items-center w-full max-w-3xl mx-auto pb-12">
+                        <!-- A4 Pages injected via JS -->
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -154,12 +157,9 @@ div ```html
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
         
-        // Dummy doc to calculate EXACT pdf text wrapping for the live preview
         const dummyDoc = new jsPDF('p', 'mm', 'a4');
         
-        let dataStore = Array.from({ length: 6 }, (_, i) => ({
-            id: i, images: [], questions: "", answers: "", filled: false
-        }));
+        let dataStore = [];
 
         const ui = {
             file: document.getElementById('fileInput'),
@@ -169,32 +169,52 @@ div ```html
             a: document.getElementById('aInput'),
             grid: document.getElementById('gridPreview'),
             next: document.getElementById('nextBtn'),
-            label: document.getElementById('slotLabel'),
-            dots: document.getElementById('navDots')
+            slotLabel: document.getElementById('slotLabel'),
+            pageLabel: document.getElementById('pageLabel'),
+            totalCount: document.getElementById('totalSlotsCount'),
+            scrollArea: document.getElementById('previewScrollArea')
         };
 
-        // Forces HTML to break lines at the exact same characters as the PDF
+        // Initialize first page
+        addNewPage(false);
+
+        function addNewPage(shouldRefresh = true) {
+            const startId = dataStore.length;
+            for(let i = 0; i < 6; i++) {
+                dataStore.push({ id: startId + i, images: [], questions: "", answers: "", filled: false });
+            }
+            if (shouldRefresh) {
+                activeIdx = startId; // Jump to first slot of new page
+                refresh();
+                scrollToActive();
+            }
+        }
+
         function getPdfLinesHtml(text, maxWidthMM) {
             if (!text) return '';
             dummyDoc.setFont("helvetica", "bold");
             dummyDoc.setFontSize(10);
             const lines = dummyDoc.splitTextToSize(text, maxWidthMM);
             return lines.map(line => {
-                const safeLine = line
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;");
-                return `<div>${safeLine || '&nbsp;'}</div>`; // Preserves empty lines
+                const safeLine = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                return `<div>${safeLine || '&nbsp;'}</div>`;
             }).join('');
         }
 
         function refresh() {
             const item = dataStore[activeIdx];
-            ui.label.textContent = activeIdx + 1;
+            
+            // Calc current page (1-based)
+            const currentPage = Math.floor(activeIdx / 6) + 1;
+            const currentSlotOnPage = (activeIdx % 6) + 1;
+
+            ui.pageLabel.textContent = currentPage;
+            ui.slotLabel.textContent = currentSlotOnPage;
+            ui.totalCount.textContent = `Total: ${dataStore.length} slots (${dataStore.length/6} pages)`;
+            
             ui.q.value = item.questions;
             ui.a.value = item.answers;
             
-            // Render UI Thumbnails
             if (item.images.length > 0) {
                 ui.thumbContainer.classList.remove('hidden');
                 ui.dropZone.classList.add('h-16');
@@ -216,58 +236,83 @@ div ```html
                 ui.dropZone.querySelector('span').textContent = "Click to add images";
             }
 
-            // Update Progress Dots
-            ui.dots.innerHTML = dataStore.map((s, i) => `
-                <div class="w-1.5 h-1.5 rounded-full ${i === activeIdx ? 'bg-blue-400 w-4' : (s.filled ? 'bg-slate-400' : 'bg-slate-700')} transition-all"></div>
-            `).join('');
-
-            // Exact millimeter metrics mapped to % of A4 width
             const qMaxWidthMM = (210 / 2) - 16;
             const aMaxWidthMM = (210 / 2) - 24;
 
-            // --- RENDER LIVE A4 PREVIEW ---
-            ui.grid.innerHTML = dataStore.map((s, i) => {
-                // Determine PDF-matching Borders
-                let borderClass = 'border-black ';
-                if (i % 2 === 0) borderClass += 'border-r '; // Center vertical line
-                if (i < 4) borderClass += 'border-b ';       // Horizontal dividing lines
-                
-                let activeClass = i === activeIdx ? 'active-cell' : 'hover:bg-slate-50 transition-colors';
+            // --- RENDER MULTIPLE A4 PAGES ---
+            const totalPages = dataStore.length / 6;
+            let fullHtml = '';
 
-                // Build Image Grid HTML
-                let imgHtml = '';
-                if (s.images.length > 0) {
-                    let cols = s.images.length === 1 ? 1 : 2;
-                    imgHtml = `<div class="flex-1 w-full grid min-h-0" style="grid-template-columns: repeat(${cols}, minmax(0, 1fr)); gap: 1.4cqw; margin-bottom: 0.9cqw;">`;
-                    s.images.forEach(img => {
-                        imgHtml += `<div class="w-full h-full flex items-center justify-center overflow-hidden"><img src="${img}" class="max-w-full max-h-full object-contain" /></div>`;
-                    });
-                    imgHtml += `</div>`;
-                } else {
-                    imgHtml = `<div class="flex-1 w-full flex items-center justify-center min-h-0"><span class="text-[10px] text-slate-300 font-bold tracking-widest">SLOT ${i+1}</span></div>`;
+            for (let p = 0; p < totalPages; p++) {
+                let pageSlotsHtml = '';
+                
+                for (let i = 0; i < 6; i++) {
+                    const globalIdx = (p * 6) + i;
+                    const s = dataStore[globalIdx];
+                    
+                    let borderClass = 'border-black ';
+                    if (i % 2 === 0) borderClass += 'border-r ';
+                    if (i < 4) borderClass += 'border-b ';
+                    
+                    let activeClass = globalIdx === activeIdx ? 'active-cell' : 'hover:bg-slate-50 transition-colors';
+                    let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
+
+                    let imgHtml = '';
+                    if (s.images.length > 0) {
+                        let cols = s.images.length === 1 ? 1 : 2;
+                        imgHtml = `<div class="flex-1 w-full grid min-h-0" style="grid-template-columns: repeat(${cols}, minmax(0, 1fr)); gap: 1.4cqw; margin-bottom: 0.9cqw;">`;
+                        s.images.forEach(img => {
+                            imgHtml += `<div class="w-full h-full flex items-center justify-center overflow-hidden"><img src="${img}" class="max-w-full max-h-full object-contain" /></div>`;
+                        });
+                        imgHtml += `</div>`;
+                    } else {
+                        imgHtml = `<div class="flex-1 w-full flex items-center justify-center min-h-0"><span class="text-[10px] text-slate-300 font-bold tracking-widest">P${p+1} - SLOT ${i+1}</span></div>`;
+                    }
+
+                    const qHtml = s.questions ? getPdfLinesHtml(s.questions, qMaxWidthMM) : '';
+                    const aHtml = s.answers ? getPdfLinesHtml(s.answers, aMaxWidthMM) : '';
+
+                    pageSlotsHtml += `
+                        <div ${activeIdAttr} onclick="goto(${globalIdx})" class="relative flex flex-col cursor-pointer overflow-hidden ${borderClass} ${activeClass}" style="padding: 3.8cqw;">
+                            ${imgHtml}
+                            <div class="mt-auto flex flex-col w-full shrink-0" style="font-family: Helvetica, Arial, sans-serif;">
+                                ${s.questions ? `<div class="font-bold text-black" style="font-size: 1.68cqw; line-height: 1.28; white-space: nowrap;">${qHtml}</div>` : ''}
+                                ${s.answers ? `<div class="bg-[#ffd7d7] font-bold text-black" style="font-size: 1.68cqw; line-height: 1.42; white-space: nowrap; padding: 1.4cqw; margin-top: 1.4cqw;">${aHtml}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
                 }
 
-                // Process text wrapping using the PDF engine logic
-                const qHtml = s.questions ? getPdfLinesHtml(s.questions, qMaxWidthMM) : '';
-                const aHtml = s.answers ? getPdfLinesHtml(s.answers, aMaxWidthMM) : '';
-
-                // Compile HTML Cell (Flex column, text pushed to bottom via mt-auto)
-                return `
-                    <div onclick="goto(${i})" class="relative flex flex-col cursor-pointer overflow-hidden ${borderClass} ${activeClass}" style="padding: 3.8cqw;">
-                        
-                        <!-- Top Area: Auto-expanding Images -->
-                        ${imgHtml}
-
-                        <!-- Bottom Area: Grouped Text (Pushed to bottom) with mm-accurate scaling -->
-                        <div class="mt-auto flex flex-col w-full shrink-0" style="font-family: Helvetica, Arial, sans-serif;">
-                            ${s.questions ? `<div class="font-bold text-black" style="font-size: 1.68cqw; line-height: 1.28; white-space: nowrap;">${qHtml}</div>` : ''}
-                            ${s.answers ? `<div class="bg-[#ffd7d7] font-bold text-black" style="font-size: 1.68cqw; line-height: 1.42; white-space: nowrap; padding: 1.4cqw; margin-top: 1.4cqw;">${aHtml}</div>` : ''}
+                // Wrap slots in A4 Page container
+                fullHtml += `
+                    <div class="w-full flex flex-col items-center">
+                        <div class="bg-slate-700 text-white text-xs font-bold px-4 py-1 rounded-t-lg mb-0 shadow-sm uppercase tracking-widest">Page ${p + 1}</div>
+                        <div class="a4-page">
+                            ${pageSlotsHtml}
                         </div>
                     </div>
                 `;
-            }).join('');
-            
+            }
+
+            ui.grid.innerHTML = fullHtml;
             lucide.createIcons();
+            
+            // Check if we are on the very last slot
+            if (activeIdx === dataStore.length - 1) {
+                ui.next.innerHTML = `Save & Add New Page <i data-lucide="file-plus" size="18"></i>`;
+            } else {
+                ui.next.innerHTML = `Save & Edit Next Slot <i data-lucide="arrow-right" size="18"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function scrollToActive() {
+            setTimeout(() => {
+                const el = document.getElementById('active-slot-element');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
         }
 
         // Logic Events
@@ -276,7 +321,6 @@ div ```html
         ui.file.onchange = (e) => {
             const files = Array.from(e.target.files);
             if (!files.length) return;
-
             files.forEach(file => {
                 const r = new FileReader();
                 r.onload = (ev) => {
@@ -293,119 +337,138 @@ div ```html
             refresh();
         };
 
-        window.goto = (idx) => { activeIdx = idx; refresh(); };
+        window.goto = (idx) => { 
+            activeIdx = idx; 
+            refresh(); 
+            scrollToActive();
+        };
 
         ui.next.onclick = () => {
             dataStore[activeIdx].questions = ui.q.value;
             dataStore[activeIdx].answers = ui.a.value;
             dataStore[activeIdx].filled = true;
-            if (activeIdx < 5) { activeIdx++; refresh(); }
-            else { alert("All 6 compartments filled! Ready to export PDF."); refresh(); }
-        };
-
-        document.getElementById('clearBtn').onclick = () => {
-            if(confirm("Erase all data and start over?")) {
-                dataStore.forEach(s => { s.images = []; s.questions = ""; s.answers = ""; s.filled = false; });
-                activeIdx = 0; refresh();
+            
+            if (activeIdx < dataStore.length - 1) { 
+                activeIdx++; 
+                refresh();
+                scrollToActive();
+            } else { 
+                // Auto add new page if at the end
+                addNewPage();
             }
         };
 
-        // --- PDF GENERATION ENGINE ---
+        document.getElementById('clearBtn').onclick = () => {
+            if(confirm("Erase all data and reset to 1 page?")) {
+                dataStore = [];
+                activeIdx = 0;
+                addNewPage(true);
+            }
+        };
+
+        // --- MULTI-PAGE PDF ENGINE ---
         async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true;
             const original = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner"></div> Creating PDF...`;
+            btn.innerHTML = `<div class="spinner"></div> Exporting PDF...`;
 
             const doc = new jsPDF('p', 'mm', 'a4');
             const cW = 210 / 2, cH = 297 / 3;
-            const pad = 8; // 8mm internal padding
+            const pad = 8; 
 
-            // Draw solid grid lines
-            doc.setDrawColor(0);
-            doc.setLineWidth(0.4);
-            doc.line(cW, 0, cW, 297);
-            doc.line(0, cH, 210, cH);
-            doc.line(0, cH * 2, 210, cH * 2);
+            const totalPages = dataStore.length / 6;
 
-            for (let i = 0; i < 6; i++) {
-                const s = dataStore[i];
-                const x = (i % 2) * cW;
-                const y = Math.floor(i / 2) * cH;
+            for (let p = 0; p < totalPages; p++) {
+                if (p > 0) doc.addPage(); // Add a new blank page for subsequent sets of 6
 
-                // --- 1. PINK BOX (BOTTOM ANCHOR) ---
-                let aBoxH = 0;
-                let aBoxY = y + cH - pad; 
-                let aLines = [];
+                // Draw solid grid lines for current page
+                doc.setDrawColor(0);
+                doc.setLineWidth(0.4);
+                doc.line(cW, 0, cW, 297);
+                doc.line(0, cH, 210, cH);
+                doc.line(0, cH * 2, 210, cH * 2);
 
-                if (s.answers) {
-                    aLines = doc.splitTextToSize(s.answers, cW - (pad * 3));
-                    aBoxH = (aLines.length * 5) + 6; 
-                    aBoxY = y + cH - pad - aBoxH; 
+                for (let i = 0; i < 6; i++) {
+                    const globalIdx = (p * 6) + i;
+                    const s = dataStore[globalIdx];
                     
-                    doc.setFillColor(255, 215, 215); // Light pink
-                    doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
-                    doc.setFontSize(10);
-                    doc.setFont("helvetica", "bold");
-                    doc.text(aLines, x + pad + 3, aBoxY + 5.5);
-                }
+                    const x = (i % 2) * cW;
+                    const y = Math.floor(i / 2) * cH;
 
-                // --- 2. QUESTIONS (ANCHORED ABOVE PINK BOX) ---
-                let qH = 0;
-                let qY = aBoxY; 
-                let qLines = [];
+                    // 1. PINK BOX
+                    let aBoxH = 0;
+                    let aBoxY = y + cH - pad; 
+                    let aLines = [];
 
-                if (s.questions) {
-                    qLines = doc.splitTextToSize(s.questions, cW - (pad * 2));
-                    qH = qLines.length * 4.5;
-                    // Questions are 3mm above Pink Box
-                    qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
-                    
-                    doc.setFontSize(10);
-                    doc.setFont("helvetica", "bold"); // BOLD text
-                    doc.setTextColor(0);
-                    doc.text(qLines, x + pad, qY + 3.5);
-                }
+                    if (s.answers) {
+                        aLines = doc.splitTextToSize(s.answers, cW - (pad * 3));
+                        aBoxH = (aLines.length * 5) + 6; 
+                        aBoxY = y + cH - pad - aBoxH; 
+                        
+                        doc.setFillColor(255, 215, 215); 
+                        doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
+                        doc.setFontSize(10);
+                        doc.setFont("helvetica", "bold");
+                        doc.text(aLines, x + pad + 3, aBoxY + 5.5);
+                    }
 
-                // --- 3. IMAGES (AUTO-FIT IN REMAINING TOP SPACE) ---
-                if (s.images.length > 0) {
-                    let maxAvailableHeight = qY - y - pad - 2; 
-                    let maxAvailableWidth = cW - (pad * 2);
-                    
-                    let cols = s.images.length === 1 ? 1 : 2; 
-                    let rows = Math.ceil(s.images.length / cols);
-                    let gap = 3; 
-                    
-                    let cellW = (maxAvailableWidth - (cols - 1) * gap) / cols;
-                    let cellH = (maxAvailableHeight - (rows - 1) * gap) / rows;
+                    // 2. QUESTIONS 
+                    let qH = 0;
+                    let qY = aBoxY; 
+                    let qLines = [];
 
-                    s.images.forEach((imgSrc, idx) => {
-                        try {
-                            const imgR = Math.floor(idx / cols);
-                            const imgC = idx % cols;
-                            
-                            const props = doc.getImageProperties(imgSrc);
-                            const ratio = props.height / props.width;
-                            
-                            let finalW = cellW;
-                            let finalH = finalW * ratio;
-                            
-                            if (finalH > cellH) {
-                                finalH = cellH;
-                                finalW = finalH / ratio;
+                    if (s.questions) {
+                        qLines = doc.splitTextToSize(s.questions, cW - (pad * 2));
+                        qH = qLines.length * 4.5;
+                        qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
+                        
+                        doc.setFontSize(10);
+                        doc.setFont("helvetica", "bold");
+                        doc.setTextColor(0);
+                        doc.text(qLines, x + pad, qY + 3.5);
+                    }
+
+                    // 3. IMAGES 
+                    if (s.images.length > 0) {
+                        let maxAvailableHeight = qY - y - pad - 2; 
+                        let maxAvailableWidth = cW - (pad * 2);
+                        
+                        let cols = s.images.length === 1 ? 1 : 2; 
+                        let rows = Math.ceil(s.images.length / cols);
+                        let gap = 3; 
+                        
+                        let cellW = (maxAvailableWidth - (cols - 1) * gap) / cols;
+                        let cellH = (maxAvailableHeight - (rows - 1) * gap) / rows;
+
+                        s.images.forEach((imgSrc, idx) => {
+                            try {
+                                const imgR = Math.floor(idx / cols);
+                                const imgC = idx % cols;
+                                
+                                const props = doc.getImageProperties(imgSrc);
+                                const ratio = props.height / props.width;
+                                
+                                let finalW = cellW;
+                                let finalH = finalW * ratio;
+                                
+                                if (finalH > cellH) {
+                                    finalH = cellH;
+                                    finalW = finalH / ratio;
+                                }
+                                
+                                const cellXStart = x + pad + (imgC * (cellW + gap));
+                                const cellYStart = y + pad + (imgR * (cellH + gap));
+                                
+                                const cx = cellXStart + (cellW - finalW) / 2;
+                                const cy = cellYStart + (cellH - finalH) / 2;
+                                
+                                doc.addImage(imgSrc, 'JPEG', cx, cy, finalW, finalH, undefined, 'FAST');
+                            } catch(err) {
+                                console.error("Image draw error", err);
                             }
-                            
-                            const cellXStart = x + pad + (imgC * (cellW + gap));
-                            const cellYStart = y + pad + (imgR * (cellH + gap));
-                            
-                            const cx = cellXStart + (cellW - finalW) / 2;
-                            const cy = cellYStart + (cellH - finalH) / 2;
-                            
-                            doc.addImage(imgSrc, 'JPEG', cx, cy, finalW, finalH, undefined, 'FAST');
-                        } catch(err) {
-                            console.error("Image draw error", err);
-                        }
-                    });
+                        });
+                    }
                 }
             }
 
@@ -416,11 +479,7 @@ div ```html
         }
 
         document.getElementById('downloadBtn').onclick = buildPDF;
-        window.onload = refresh;
     </script>
 </body>
 </html>
 
-
-
-```
