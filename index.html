@@ -53,6 +53,7 @@
             width: 794px; 
             height: 1123px; 
             background-color: white;
+            display: grid;
             box-sizing: border-box;
             position: absolute;
             top: 0;
@@ -64,8 +65,8 @@
             content: '';
             position: absolute;
             inset: 0;
-            border: 3px solid #3b82f6;
-            background-color: rgba(59, 130, 246, 0.04);
+            border: 3px solid #37352F;
+            background-color: rgba(55, 53, 47, 0.02);
             pointer-events: none;
             z-index: 10;
         }
@@ -91,7 +92,7 @@
                 <div class="w-px h-5 bg-[#E9E9E7] mx-1 hidden md:block"></div>
                 <button onclick="addNewPage()" class="flex items-center gap-1.5 bg-white hover:bg-[#F7F7F5] text-[#37352F] px-4 py-2 rounded text-sm font-medium transition-all border border-[#E9E9E7] shadow-sm">
                     <i data-lucide="file-plus" size="16"></i>
-                    <span>Add Slots</span>
+                    <span>Add Page</span>
                 </button>
                 <button id="downloadBtn" class="flex items-center gap-1.5 bg-[#2F3437] hover:bg-[#191919] text-white px-5 py-2 rounded text-sm font-medium shadow-sm transition-all active:scale-95">
                     <i data-lucide="printer" size="16"></i>
@@ -105,39 +106,34 @@
                 <div class="bg-white rounded-lg shadow-sm border border-[#E9E9E7] overflow-hidden sticky top-8 flex flex-col">
                     <div class="bg-[#F7F7F5] px-5 py-3 border-b border-[#E9E9E7] flex justify-between items-center">
                         <span class="font-bold text-sm text-[#37352F]">
-                            Editing: Slot <span id="slotLabel" class="bg-white px-2 py-0.5 rounded border border-[#E9E9E7]">1</span>
+                            Editing: Page <span id="pageLabel">1</span>, Slot <span id="slotLabel" class="bg-white px-2 py-0.5 rounded border border-[#E9E9E7]">1</span>
                         </span>
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount"></span>
                     </div>
 
-                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-5 gap-y-4">
+                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-8 gap-y-4">
                         <div class="flex items-center gap-2">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Theme:</span>
                             <div class="flex gap-1.5" id="colorSwatches"></div>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Font:</span>
-                            <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1.5 bg-white outline-none cursor-pointer">
+                            <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none">
                                 <option value="sans">Modern</option>
                                 <option value="serif">Classic</option>
                                 <option value="mono">Typewriter</option>
                             </select>
                         </div>
-                        
-                        <!-- NEW AUTO-FIT CONTROLS -->
-                        <div class="flex items-center gap-2 w-full pt-1">
-                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Layout:</span>
-                            
-                            <button id="autoFitBtn" onclick="toggleAutoFit()" class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold transition-all border border-[#E9E9E7] bg-white hover:bg-[#F9F9F8]">
-                                <i data-lucide="maximize" size="14"></i>
-                                Auto Fit
-                            </button>
-
-                            <select id="gridSelect" onchange="changeGrid(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1.5 bg-white outline-none cursor-pointer transition-opacity">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Grid:</span>
+                            <select id="gridSelect" onchange="changeGrid(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none">
+                                <option value="1">1 Slot</option>
                                 <option value="2">2 Slots</option>
+                                <option value="3">3 Slots</option>
                                 <option value="4">4 Slots</option>
-                                <option value="6" selected>6 Slots (Strict)</option>
+                                <option value="6" selected>6 Slots</option>
                                 <option value="8">8 Slots</option>
+                                <option value="9">9 Slots</option>
                             </select>
                         </div>
                     </div>
@@ -155,12 +151,12 @@
 
                         <div>
                             <label class="block text-xs font-bold text-[#9B9A97] mb-2 uppercase tracking-widest">2. Questions</label>
-                            <textarea id="qInput" oninput="saveText()" class="w-full h-24 p-3 rounded-md border border-[#E9E9E7] bg-[#F7F7F5] outline-none text-sm font-semibold resize-none text-[#37352F] leading-relaxed" placeholder="A) Diagnosis?"></textarea>
+                            <textarea id="qInput" oninput="saveText()" class="w-full h-20 p-3 rounded-md border border-[#E9E9E7] bg-[#F7F7F5] outline-none text-sm font-semibold resize-none text-[#37352F]" placeholder="A) Diagnosis?"></textarea>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-[#9B9A97] mb-2 uppercase tracking-widest">3. Answers</label>
-                            <textarea id="aInput" oninput="saveText()" class="w-full h-24 p-3 rounded-md border outline-none text-sm text-[#37352F] font-bold resize-none leading-relaxed" placeholder="A) Result here..."></textarea>
+                            <textarea id="aInput" oninput="saveText()" class="w-full h-20 p-3 rounded-md border outline-none text-sm text-[#37352F] font-bold resize-none" placeholder="A) Result here..."></textarea>
                         </div>
 
                         <button id="nextBtn" onclick="nextSlot()" class="w-full bg-[#2F3437] hover:bg-[#191919] text-white py-3 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm"></button>
@@ -192,7 +188,6 @@
         let slotsPerPage = 6;
         let activeTheme = 'pink';
         let activeFont = 'sans';
-        let isAutoFit = false; // New Auto Fit State
 
         const themes = {
             pink:   { bg: '#FBE4E4', border: '#F5E6E6', rgb: [251, 228, 228] },
@@ -216,11 +211,6 @@
             scrollArea: document.getElementById('previewScrollArea')
         };
 
-        const dummyDoc = new jsPDF('p', 'mm', 'a4');
-
-        // Escapes text for accurate HTML display
-        function escapeHtml(t) { return !t ? '' : t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-
         function getGridLayout(slots) {
             let cols = 1, rows = 1;
             if (slots === 4) { cols = 2; rows = 2; }
@@ -231,131 +221,55 @@
             return { cols, rows };
         }
 
-        // --- DYNAMIC HEIGHT CALCULATION ENGINE ---
-        function calculateDynamicLayout() {
-            const pages = [];
-            let currentPage = [];
-            let currentY = 0;
-            const pW = 210, pH = 297, pad = 8, cW = pW / 2; // Auto-fit forces 2 columns
-            
-            dummyDoc.setFont(fonts[activeFont].jspdf, "bold");
-            dummyDoc.setFontSize(10);
-
-            for (let i = 0; i < dataStore.length; i += 2) {
-                const s1 = dataStore[i];
-                const s2 = dataStore[i+1]; 
-
-                const getReqH = (s) => {
-                    if (!s) return 0;
-                    let h = pad * 2; // Top & Bottom padding
-                    let hasContent = false;
-
-                    if (s.images.length > 0) {
-                        let imgCols = s.images.length === 1 ? 1 : 2;
-                        let availW = cW - (pad * 2);
-                        let gap = 3;
-                        let iW = (availW - (imgCols - 1) * gap) / imgCols;
-                        let maxImgH = 0;
-                        s.images.forEach(src => {
-                            try {
-                                const props = dummyDoc.getImageProperties(src);
-                                const ratio = props.height / props.width;
-                                let fH = iW * ratio;
-                                if (fH > maxImgH) maxImgH = fH;
-                            } catch(e) {}
-                        });
-                        if (maxImgH > 110) maxImgH = 110; // Cap image height to ~1/3 of a page
-                        let rows = Math.ceil(s.images.length / imgCols);
-                        h += (maxImgH * rows) + (rows - 1)*gap;
-                        hasContent = true;
-                    }
-
-                    if (s.questions) {
-                        let qLines = dummyDoc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
-                        h += (qLines.length * 4.5) + (hasContent ? 6 : 0); 
-                        hasContent = true;
-                    }
-
-                    if (s.answers) {
-                        let aLines = dummyDoc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
-                        h += (aLines.length * 5) + 6 + (hasContent ? 4 : 0); 
-                        hasContent = true;
-                    }
-
-                    if (!hasContent) h += 40; // Default height if totally empty
-                    return h; 
-                };
-
-                const reqH1 = getReqH(s1);
-                const reqH2 = getReqH(s2);
-                let rowH = Math.max(reqH1, reqH2, pH / 4); // Minimum height is 1/4 of A4
-                if (rowH > pH - 16) rowH = pH - 16; // Prevent it from exceeding a single page
-
-                // If adding this row exceeds the page height, push to a new page
-                if (currentY + rowH > pH && currentPage.length > 0) {
-                    pages.push(currentPage);
-                    currentPage = [];
-                    currentY = 0;
-                }
-
-                currentPage.push({ s1, s2, rowH, y: currentY, rowIdx: currentPage.length });
-                currentY += rowH;
-            }
-            if (currentPage.length > 0) pages.push(currentPage);
-            return pages;
-        }
-
-        function toggleAutoFit() {
-            isAutoFit = !isAutoFit;
-            const btn = document.getElementById('autoFitBtn');
-            const gridSelect = document.getElementById('gridSelect');
-            if (isAutoFit) {
-                btn.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
-                btn.classList.remove('bg-white');
-                gridSelect.disabled = true;
-                gridSelect.style.opacity = '0.4';
-            } else {
-                btn.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-200');
-                btn.classList.add('bg-white');
-                gridSelect.disabled = false;
-                gridSelect.style.opacity = '1';
-            }
-            refreshAll();
-        }
-
         function saveText() {
             dataStore[activeIdx].questions = ui.q.value;
             dataStore[activeIdx].answers = ui.a.value;
-            refreshAll(); 
+            refreshAll(); // Auto update preview while typing
         }
 
-        function changeTheme(key) { activeTheme = key; initStylingControls(); refreshAll(); }
-        function changeFont(key) { activeFont = key; refreshAll(); }
-        function changeGrid(val) { slotsPerPage = parseInt(val); refreshAll(); }
+        function changeTheme(key) {
+            activeTheme = key;
+            initStylingControls();
+            refreshAll();
+        }
+
+        function changeFont(key) {
+            activeFont = key;
+            refreshAll();
+        }
+
+        function changeGrid(val) {
+            slotsPerPage = parseInt(val);
+            // Re-align data store: ensure we have complete pages
+            const totalItems = dataStore.length;
+            const remainder = totalItems % slotsPerPage;
+            if (remainder !== 0) {
+                const needed = slotsPerPage - remainder;
+                for (let i = 0; i < needed; i++) {
+                    dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
+                }
+            }
+            if (activeIdx >= dataStore.length) activeIdx = 0;
+            refreshAll();
+        }
 
         function addNewPage(shouldRefresh = true) {
-            let addCount = isAutoFit ? 2 : slotsPerPage;
-            for(let i = 0; i < addCount; i++) {
+            for(let i = 0; i < slotsPerPage; i++) {
                 dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
             }
             if (shouldRefresh) {
-                activeIdx = dataStore.length - addCount; 
+                activeIdx = dataStore.length - slotsPerPage; 
                 refreshAll();
                 scrollToActive();
             }
         }
 
         function removePage(pIdx) {
-            if (dataStore.length <= slotsPerPage && !isAutoFit) return;
+            if (dataStore.length <= slotsPerPage) return;
             if (confirm("Delete this page and all its content?")) {
-                if (isAutoFit) {
-                    // Complex to delete page in auto fit, just clear all for simplicity
-                    alert("Switch off Auto-Fit to manually delete specific pages.");
-                } else {
-                    dataStore.splice(pIdx * slotsPerPage, slotsPerPage);
-                    activeIdx = 0;
-                    refreshAll();
-                }
+                dataStore.splice(pIdx * slotsPerPage, slotsPerPage);
+                activeIdx = 0;
+                refreshAll();
             }
         }
 
@@ -407,39 +321,10 @@
             ui.scrollArea.style.opacity = '1';
         }
 
-        // Shared HTML Builder for Slots
-        function buildSlotHtml(s, globalIdx, borderStyle, isFlex = false) {
-            if (!s) return isFlex ? `<div style="width: 50%; box-sizing: border-box; ${borderStyle}"></div>` : '';
-            
-            let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
-            let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
-
-            let imgHtml = '';
-            if (s.images.length > 0) {
-                let cols = s.images.length === 1 ? 1 : 2;
-                imgHtml = `<div style="flex: 1; width: 100%; display: grid; grid-template-columns: repeat(${cols}, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; min-height: 0;">`;
-                s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></div>`);
-                imgHtml += `</div>`;
-            } else {
-                imgHtml = `<div style="flex: 1; display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
-            }
-
-            const wStyle = isFlex ? `width: 50%;` : ``;
-
-            return `
-                <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll(); scrollToActive();" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${wStyle} ${borderStyle} padding: 24px; box-sizing: border-box;">
-                    ${imgHtml}
-                    <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%;">
-                        ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: 8px; word-break: break-word;">${escapeHtml(s.questions)}</div>` : ''}
-                        ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px; word-break: break-word;">${escapeHtml(s.answers)}</div>` : ''}
-                    </div>
-                </div>
-            `;
-        }
-
         function refreshAll() {
             const item = dataStore[activeIdx];
-            document.getElementById('slotLabel').textContent = activeIdx + 1;
+            document.getElementById('pageLabel').textContent = Math.floor(activeIdx / slotsPerPage) + 1;
+            document.getElementById('slotLabel').textContent = (activeIdx % slotsPerPage) + 1;
             document.getElementById('totalSlotsCount').textContent = `Total: ${dataStore.length} slots`;
             
             ui.q.style.fontFamily = fonts[activeFont].css;
@@ -447,6 +332,7 @@
             ui.a.style.backgroundColor = themes[activeTheme].bg;
             ui.a.style.borderColor = themes[activeTheme].border;
 
+            // Only update text values if they don't match (prevents cursor jumping while typing)
             if (ui.q.value !== item.questions) ui.q.value = item.questions;
             if (ui.a.value !== item.answers) ui.a.value = item.answers;
 
@@ -465,76 +351,65 @@
                 thumbContainer.classList.add('hidden');
             }
 
+            const totalPages = dataStore.length / slotsPerPage;
             let fullHtml = '';
+            const { cols, rows } = getGridLayout(slotsPerPage);
 
-            if (isAutoFit) {
-                // AUTO FIT RENDER (Flex-based dynamic rows)
-                const pages = calculateDynamicLayout();
-                pages.forEach((pageRows, p) => {
-                    let pageSlotsHtml = '';
-                    pageRows.forEach(row => {
-                        const heightPct = (row.rowH / 297) * 100;
-                        let btmBorder = row.rowIdx < pageRows.length - 1 ? 'border-bottom: 2px solid #E9E9E7;' : '';
-                        let rowHtml = `<div style="display: flex; width: 100%; height: ${heightPct}%; ${btmBorder} box-sizing: border-box;">`;
-                        
-                        const global1 = dataStore.indexOf(row.s1);
-                        const global2 = dataStore.indexOf(row.s2);
-                        
-                        let b1 = 'border-right: 2px solid #E9E9E7; box-sizing: border-box;';
-                        
-                        rowHtml += buildSlotHtml(row.s1, global1, b1, true);
-                        rowHtml += buildSlotHtml(row.s2, global2, '', true);
-                        rowHtml += `</div>`;
-                        pageSlotsHtml += rowHtml;
-                    });
+            for (let p = 0; p < totalPages; p++) {
+                let pageSlotsHtml = '';
+                let gridStyle = `grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`;
+
+                for (let i = 0; i < slotsPerPage; i++) {
+                    const globalIdx = (p * slotsPerPage) + i;
+                    const s = dataStore[globalIdx];
                     
-                    fullHtml += `
-                        <div class="w-full flex flex-col items-center">
-                            <div class="w-full max-w-[794px] mb-2 flex justify-between items-center px-1">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-widest">Page ${p + 1}</span>
-                            </div>
-                            <div class="a4-wrapper"><div class="a4-page flex flex-col" id="page-${p}">${pageSlotsHtml}</div></div>
-                        </div>`;
-                });
-            } else {
-                // STRICT GRID RENDER (Standard CSS Grid)
-                const { cols, rows } = getGridLayout(slotsPerPage);
-                const totalPages = Math.ceil(dataStore.length / slotsPerPage);
+                    let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
+                    let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
 
-                for (let p = 0; p < totalPages; p++) {
-                    let pageSlotsHtml = '';
-                    let gridStyle = `display: grid; grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`;
+                    let border = 'border-color: #E9E9E7; border-style: solid; border-width: 0;';
+                    if (cols > 1 && (i % cols === 0)) border += ' border-right-width: 2px;';
+                    if (rows > 1 && i < (slotsPerPage - cols)) border += ' border-bottom-width: 2px;';
+                    // Correction for vertical line on right side of left column in 2nd col grid
+                    if (cols === 2 && i % 2 === 0) border += ' border-right-width: 2px;';
+                    else if (cols === 2) border += ' border-right-width: 0;';
 
-                    for (let i = 0; i < slotsPerPage; i++) {
-                        const globalIdx = (p * slotsPerPage) + i;
-                        if (globalIdx >= dataStore.length) continue;
-                        const s = dataStore[globalIdx];
-                        
-                        let border = 'border-color: #E9E9E7; border-style: solid; border-width: 0;';
-                        if (cols > 1 && (i % cols === 0)) border += ' border-right-width: 2px;';
-                        if (rows > 1 && i < (slotsPerPage - cols)) border += ' border-bottom-width: 2px;';
-                        if (cols === 2 && i % 2 === 0) border += ' border-right-width: 2px;';
-                        else if (cols === 2) border += ' border-right-width: 0;';
-
-                        pageSlotsHtml += buildSlotHtml(s, globalIdx, border, false);
+                    let imgHtml = '';
+                    if (s.images.length > 0) {
+                        let iCols = s.images.length === 1 ? 1 : 2;
+                        imgHtml = `<div style="flex: 1; width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; min-height: 0;">`;
+                        s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></div>`);
+                        imgHtml += `</div>`;
+                    } else {
+                        imgHtml = `<div style="flex: 1; display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${i+1}</span></div>`;
                     }
 
-                    fullHtml += `
-                        <div class="w-full flex flex-col items-center">
-                            <div class="w-full max-w-[794px] mb-2 flex justify-between items-center px-1">
-                                <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-widest">Page ${p + 1}</span>
-                                ${totalPages > 1 && !isAutoFit ? `<button onclick="removePage(${p})" class="text-rose-400 hover:text-rose-600 transition-colors" title="Delete Page"><i data-lucide="trash-2" size="14"></i></button>` : ''}
+                    pageSlotsHtml += `
+                        <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${border} padding: 24px; box-sizing: border-box;">
+                            ${imgHtml}
+                            <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%;">
+                                ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: 8px;">${s.questions}</div>` : ''}
+                                ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px;">${s.answers}</div>` : ''}
                             </div>
-                            <div class="a4-wrapper"><div class="a4-page" id="page-${p}" style="${gridStyle}">${pageSlotsHtml}</div></div>
-                        </div>`;
+                        </div>
+                    `;
                 }
+
+                fullHtml += `
+                    <div class="w-full flex flex-col items-center">
+                        <div class="w-full max-w-[794px] mb-2 flex justify-between items-center px-1">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-widest">Page ${p + 1}</span>
+                            ${totalPages > 1 ? `<button onclick="removePage(${p})" class="text-rose-400 hover:text-rose-600 transition-colors" title="Delete Page"><i data-lucide="trash-2" size="14"></i></button>` : ''}
+                        </div>
+                        <div class="a4-wrapper"><div class="a4-page" id="page-${p}" style="${gridStyle}">${pageSlotsHtml}</div></div>
+                    </div>
+                `;
             }
 
             ui.grid.innerHTML = fullHtml;
             requestAnimationFrame(scalePages);
             
             const isLast = activeIdx === dataStore.length - 1;
-            ui.next.innerHTML = `<span>${isLast ? 'Save & Add Slot' : 'Save & Next Slot'}</span> <i data-lucide="${isLast ? 'file-plus' : 'arrow-right'}" size="16"></i>`;
+            ui.next.innerHTML = `<span>${isLast ? 'Save & Add Page' : 'Save & Next Slot'}</span> <i data-lucide="${isLast ? 'file-plus' : 'arrow-right'}" size="16"></i>`;
             lucide.createIcons();
         }
 
@@ -550,18 +425,31 @@
             btn.disabled = true; const original = btn.innerHTML;
             btn.innerHTML = `<div class="spinner"></div> <span>Exporting...</span>`;
 
-            try {
-                const doc = new jsPDF('p', 'mm', 'a4');
-                const pW = 210, pH = 297, pad = 8;
-                const rgb = themes[activeTheme].rgb, fName = fonts[activeFont].jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pW = 210, pH = 297, pad = 8;
+            
+            const { cols, rows } = getGridLayout(slotsPerPage);
+            const cW = pW / cols, cH = pH / rows;
 
-                // SHARED PDF DRAW FUNCTION
-                const drawSlotContent = (s, x, y, cW, cH) => {
-                    if (!s) return;
+            const rgb = themes[activeTheme].rgb, fName = fonts[activeFont].jspdf;
+            const totalPages = dataStore.length / slotsPerPage;
+
+            for (let p = 0; p < totalPages; p++) {
+                if (p > 0) doc.addPage();
+                
+                // Draw Grid lines
+                doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
+                for(let c=1; c<cols; c++) doc.line(c*cW, 0, c*cW, pH);
+                for(let r=1; r<rows; r++) doc.line(0, r*cH, pW, r*cH);
+
+                for (let i = 0; i < slotsPerPage; i++) {
+                    const s = dataStore[(p * slotsPerPage) + i];
+                    const x = (i % cols) * cW, y = Math.floor(i / cols) * cH;
+                    
                     let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
                     if (s.answers) {
                         doc.setFont(fName, "bold");
-                        doc.setFontSize(10); 
+                        doc.setFontSize(10); // CRITICAL FIX: Set font size BEFORE splitting text
                         aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6); 
                         aBoxH = (aLines.length * 5) + 6; 
                         aBoxY = y + cH - pad - aBoxH; 
@@ -576,7 +464,7 @@
                     let qH = 0, qY = aBoxY, qLines = [];
                     if (s.questions) {
                         doc.setFont(fName, "bold");
-                        doc.setFontSize(10);
+                        doc.setFontSize(10); // CRITICAL FIX: Set font size BEFORE splitting text
                         qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
                         qH = qLines.length * 4.5; 
                         qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
@@ -589,9 +477,7 @@
                         let availH = qY - y - pad - 2, availW = cW - (pad * 2);
                         let imgCols = s.images.length === 1 ? 1 : 2;
                         let imgRows = Math.ceil(s.images.length / imgCols);
-                        let gap = 3;
-                        let iW = (availW - (imgCols - 1)*gap) / imgCols;
-                        let iH = (availH - (imgRows - 1)*gap) / imgRows;
+                        let iW = availW / imgCols, iH = availH / imgRows;
 
                         s.images.forEach((src, idx) => {
                             try {
@@ -599,63 +485,16 @@
                                 const ratio = props.height / props.width;
                                 let fW = iW - 2, fH = fW * ratio;
                                 if (fH > iH - 2) { fH = iH - 2; fW = fH / ratio; }
-                                const cx = x + pad + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
-                                const cy = y + pad + Math.floor(idx / imgCols) * (iH + gap) + (iH - fH) / 2;
+                                const cx = x + pad + (idx % imgCols) * iW + (iW - fW) / 2;
+                                const cy = y + pad + Math.floor(idx / imgCols) * iH + (iH - fH) / 2;
                                 doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
                             } catch(e) {}
                         });
                     }
-                };
-
-                if (isAutoFit) {
-                    // PDF RENDER: DYNAMIC (Auto Fit)
-                    const pages = calculateDynamicLayout();
-                    const cW = pW / 2;
-                    
-                    pages.forEach((pageRows, pIdx) => {
-                        if (pIdx > 0) doc.addPage();
-                        
-                        doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
-                        doc.line(cW, 0, cW, pH); // Center vertical line
-                        
-                        pageRows.forEach(row => {
-                            if (row.rowIdx < pageRows.length - 1) {
-                                doc.line(0, row.y + row.rowH, pW, row.y + row.rowH); // Row border
-                            }
-                            drawSlotContent(row.s1, 0, row.y, cW, row.rowH);
-                            drawSlotContent(row.s2, cW, row.y, cW, row.rowH);
-                        });
-                    });
-                } else {
-                    // PDF RENDER: STRICT GRID
-                    const { cols, rows } = getGridLayout(slotsPerPage);
-                    const cW = pW / cols, cH = pH / rows;
-                    const totalPages = Math.ceil(dataStore.length / slotsPerPage);
-
-                    for (let p = 0; p < totalPages; p++) {
-                        if (p > 0) doc.addPage();
-                        
-                        doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
-                        for(let c=1; c<cols; c++) doc.line(c*cW, 0, c*cW, pH);
-                        for(let r=1; r<rows; r++) doc.line(0, r*cH, pW, r*cH);
-
-                        for (let i = 0; i < slotsPerPage; i++) {
-                            const globalIdx = (p * slotsPerPage) + i;
-                            if (globalIdx >= dataStore.length) continue;
-                            const s = dataStore[globalIdx];
-                            const x = (i % cols) * cW, y = Math.floor(i / cols) * cH;
-                            
-                            drawSlotContent(s, x, y, cW, cH);
-                        }
-                    }
                 }
-
-                doc.save(`Medical_Summary_${Date.now()}.pdf`);
-            } catch (error) {
-                console.error(error); alert("Export Error. Please try again.");
-            } finally {
-                btn.disabled = false; btn.innerHTML = original; lucide.createIcons();
             }
+            doc.save(`Medical_Summary_${Date.now()}.pdf`);
+            btn.disabled = false; btn.innerHTML = original; lucide.createIcons();
         }
 
         document.getElementById('downloadBtn').onclick = buildPDF;
@@ -672,6 +511,3 @@
     </script>
 </body>
 </html>
-
-
-
