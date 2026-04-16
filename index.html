@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,159 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global state for app
-        window.firebaseApp = null;
-        window.db = null;
-        window.auth = null;
-        window.currentUser = null;
-        window.isCloudSyncing = false;
-
-        // Exposed functions to window for global access
-        window.saveStateToCloud = async () => {
-            if (!window.currentUser || !window.db) return;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'medical-summary-builder';
-            const userId = window.currentUser.uid;
-            
-            updateSyncStatus(true);
-            try {
-                // Save settings (theme/font)
-                await setDoc(doc(window.db, 'artifacts', appId, 'users', userId, 'settings', 'prefs'), {
-                    activeTheme: window.activeTheme,
-                    activeFont: window.activeFont,
-                    lastUpdated: Date.now()
-                });
-
-                // Save dataStore - we save as chunks or individual slots to avoid the 1MB limit
-                // For simplicity and speed, we'll save each slot in a collection
-                const slotsCol = collection(window.db, 'artifacts', appId, 'users', userId, 'slots');
-                for (let i = 0; i < window.dataStore.length; i++) {
-                    const slot = window.dataStore[i];
-                    // Only save if it has content to save writes
-                    if (slot.questions || slot.answers || slot.images.length > 0) {
-                        await setDoc(doc(slotsCol, `slot_${i}`), slot);
-                    }
-                }
-            } catch (err) {
-                console.error("Cloud save failed:", err);
-            } finally {
-                setTimeout(() => updateSyncStatus(false), 800);
-            }
-        };
-
-        window.clearCloudData = async () => {
-            if (!window.currentUser || !window.db) return;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'medical-summary-builder';
-            const userId = window.currentUser.uid;
-            
-            try {
-                // Clear settings
-                await deleteDoc(doc(window.db, 'artifacts', appId, 'users', userId, 'settings', 'prefs'));
-                
-                // Clear all slots
-                const slotsCol = collection(window.db, 'artifacts', appId, 'users', userId, 'slots');
-                const snapshot = await getDocs(slotsCol);
-                const deletions = snapshot.docs.map(d => deleteDoc(d.ref));
-                await Promise.all(deletions);
-            } catch (err) {
-                console.error("Cloud clear failed:", err);
-            }
-        };
-
-        // Initialize Firebase
-        const startFirebase = async () => {
-            const firebaseConfig = JSON.parse(__firebase_config);
-            window.firebaseApp = initializeApp(firebaseConfig);
-            window.auth = getAuth(window.firebaseApp);
-            window.db = getFirestore(window.firebaseApp);
-
-            // Auth flow
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(window.auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(window.auth);
-            }
-
-            onAuthStateChanged(window.auth, async (user) => {
-                if (user) {
-                    window.currentUser = user;
-                    await loadStateFromCloud();
-                }
-            });
-        };
-
-        const loadStateFromCloud = async () => {
-            if (!window.currentUser || !window.db) return;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'medical-summary-builder';
-            const userId = window.currentUser.uid;
-
-            try {
-                // Load Settings
-                const settingsDoc = await getDoc(doc(window.db, 'artifacts', appId, 'users', userId, 'settings', 'prefs'));
-                if (settingsDoc.exists()) {
-                    const data = settingsDoc.data();
-                    window.activeTheme = data.activeTheme || 'pink';
-                    window.activeFont = data.activeFont || 'sans';
-                    
-                    // Update UI elements
-                    document.getElementById('fontSelect').value = window.activeFont;
-                    window.initStylingControls();
-                }
-
-                // Load Slots
-                const slotsCol = collection(window.db, 'artifacts', appId, 'users', userId, 'slots');
-                const snapshot = await getDocs(slotsCol);
-                
-                if (!snapshot.empty) {
-                    // Pre-fill dataStore with empty slots if needed
-                    let maxIdx = 0;
-                    snapshot.docs.forEach(d => {
-                        const id = parseInt(d.id.split('_')[1]);
-                        if (id > maxIdx) maxIdx = id;
-                    });
-                    
-                    // Ensure enough pages exist
-                    const neededPages = Math.ceil((maxIdx + 1) / 6);
-                    window.dataStore = []; // Reset local temp store
-                    for (let i = 0; i < (neededPages * 6); i++) {
-                        window.dataStore.push({ id: i, images: [], questions: "", answers: "", filled: false });
-                    }
-
-                    // Fill with data
-                    snapshot.docs.forEach(d => {
-                        const id = parseInt(d.id.split('_')[1]);
-                        window.dataStore[id] = d.data();
-                    });
-                }
-            } catch (err) {
-                console.error("Cloud load failed:", err);
-            } finally {
-                // Initial render
-                window.refreshEditor();
-                window.refreshPreview();
-            }
-        };
-
-        function updateSyncStatus(syncing) {
-            const el = document.getElementById('syncIndicator');
-            if (!el) return;
-            if (syncing) {
-                el.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3 animate-spin text-blue-500"></i><span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Saving...</span>`;
-            } else {
-                el.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i><span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Synced</span>`;
-            }
-            lucide.createIcons();
-        }
-
-        startFirebase();
-    </script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -172,6 +18,7 @@
             min-height: 100vh;
         }
 
+        /* Prevent layout jump: Start hidden, fade in once scaled */
         #previewScrollArea {
             opacity: 0;
             transition: opacity 0.2s ease-in;
@@ -203,8 +50,8 @@
         }
 
         .a4-page {
-            width: 794px;
-            height: 1123px;
+            width: 794px; /* Fixed native A4 width */
+            height: 1123px; /* Fixed native A4 height */
             background-color: white;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -245,10 +92,6 @@
                     <h1 class="text-xl font-bold tracking-tight text-[#37352F]">
                         Medical Summary Builder
                     </h1>
-                    <div id="syncIndicator" class="flex items-center gap-1.5 mt-0.5">
-                        <i data-lucide="cloud" class="w-3 h-3 text-slate-300"></i>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Connecting...</span>
-                    </div>
                 </div>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
@@ -282,7 +125,7 @@
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount">Total: 6 slots</span>
                     </div>
 
-                    <!-- Toolbar -->
+                    <!-- Toolbar with gap fix -->
                     <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-10 gap-y-4">
                         <div class="flex items-center gap-3">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Box Color:</span>
@@ -363,8 +206,8 @@
 
     <script>
         const { jsPDF } = window.jspdf;
-        window.activeIdx = 0;
-        window.dataStore = [];
+        let activeIdx = 0;
+        let dataStore = [];
         const dummyDoc = new jsPDF('p', 'mm', 'a4');
 
         const themes = {
@@ -381,8 +224,8 @@
             mono:  { css: "'Courier New', Courier, monospace", jspdf: "courier" }
         };
 
-        window.activeTheme = 'pink';
-        window.activeFont = 'sans';
+        let activeTheme = 'pink';
+        let activeFont = 'sans';
 
         const ui = {
             file: document.getElementById('fileInput'),
@@ -398,83 +241,46 @@
             scrollArea: document.getElementById('previewScrollArea')
         };
 
-        let saveTimeout;
-        const triggerCloudSave = () => {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                if (window.saveStateToCloud) window.saveStateToCloud();
-            }, 1000);
-        };
+        ui.q.oninput = () => { dataStore[activeIdx].questions = ui.q.value; };
+        ui.a.oninput = () => { dataStore[activeIdx].answers = ui.a.value; };
 
-        ui.q.oninput = () => { 
-            window.dataStore[window.activeIdx].questions = ui.q.value; 
-            triggerCloudSave();
-        };
-        ui.a.oninput = () => { 
-            window.dataStore[window.activeIdx].answers = ui.a.value; 
-            triggerCloudSave();
-        };
-
-        window.initStylingControls = function() {
+        function initStylingControls() {
             const swatches = document.getElementById('colorSwatches');
             swatches.innerHTML = Object.keys(themes).map(key => `
                 <button onclick="changeTheme('${key}')" 
-                    class="w-5 h-5 rounded-full transition-all focus:outline-none ${window.activeTheme === key ? 'ring-2 ring-[#37352F] ring-offset-1 scale-110' : 'hover:scale-110'}" 
+                    class="w-5 h-5 rounded-full transition-all focus:outline-none ${activeTheme === key ? 'ring-2 ring-[#37352F] ring-offset-1 scale-110' : 'hover:scale-110'}" 
                     style="background-color: ${themes[key].bg}; border: 1px solid ${themes[key].border};">
                 </button>
             `).join('');
-        };
+        }
 
-        window.changeTheme = function(key) {
-            window.activeTheme = key;
-            window.initStylingControls();
-            ui.a.style.backgroundColor = themes[window.activeTheme].bg;
-            ui.a.style.borderColor = themes[window.activeTheme].border;
+        function changeTheme(key) {
+            activeTheme = key;
+            initStylingControls();
+            ui.a.style.backgroundColor = themes[activeTheme].bg;
+            ui.a.style.borderColor = themes[activeTheme].border;
             refreshPreview(); 
-            triggerCloudSave();
-        };
+        }
 
-        window.changeFont = function(key) {
-            window.activeFont = key;
-            ui.q.style.fontFamily = fonts[window.activeFont].css;
-            ui.a.style.fontFamily = fonts[window.activeFont].css;
+        function changeFont(key) {
+            activeFont = key;
+            ui.q.style.fontFamily = fonts[activeFont].css;
+            ui.a.style.fontFamily = fonts[activeFont].css;
             refreshPreview();
-            triggerCloudSave();
-        };
+        }
 
-        window.addNewPage = function(shouldRefresh = true) {
-            const startId = window.dataStore.length;
+        function addNewPage(shouldRefresh = true) {
+            const startId = dataStore.length;
             for(let i = 0; i < 6; i++) {
-                window.dataStore.push({ id: startId + i, images: [], questions: "", answers: "", filled: false });
+                dataStore.push({ id: startId + i, images: [], questions: "", answers: "", filled: false });
             }
             if (shouldRefresh) {
-                window.activeIdx = startId; 
-                window.refreshEditor();
-                window.refreshPreview();
+                activeIdx = startId; 
+                refreshEditor();
+                refreshPreview();
                 scrollToActive();
-                triggerCloudSave();
             }
-        };
-
-        window.removePage = function(pageIdx) {
-            const totalPages = window.dataStore.length / 6;
-            if (totalPages <= 1) return;
-            if(confirm(`Delete Page ${pageIdx + 1}?`)) {
-                window.dataStore.splice(pageIdx * 6, 6);
-                if (window.activeIdx >= pageIdx * 6 && window.activeIdx < (pageIdx + 1) * 6) {
-                    window.activeIdx = Math.max(0, (pageIdx - 1) * 6);
-                } else if (window.activeIdx >= (pageIdx + 1) * 6) {
-                    window.activeIdx -= 6;
-                }
-                window.refreshEditor();
-                window.refreshPreview();
-                
-                // When we remove a page, we need to clear everything and resync
-                if (window.clearCloudData && window.saveStateToCloud) {
-                    window.clearCloudData().then(() => window.saveStateToCloud());
-                }
-            }
-        };
+        }
 
         function scalePages() {
             const wrappers = document.querySelectorAll('.a4-wrapper');
@@ -483,22 +289,20 @@
                 const page = wrapper.querySelector('.a4-page');
                 if (page) page.style.transform = `scale(${scale})`;
             });
+            // Show preview only after scaling is complete
             ui.scrollArea.style.opacity = '1';
         }
-        
-        window.addEventListener('resize', scalePages);
 
-        window.refreshEditor = function() {
-            const item = window.dataStore[window.activeIdx];
-            if (!item) return;
-            ui.pageLabel.textContent = Math.floor(window.activeIdx / 6) + 1;
-            ui.slotLabel.textContent = (window.activeIdx % 6) + 1;
-            ui.totalCount.textContent = `Total: ${window.dataStore.length} slots`;
+        function refreshEditor() {
+            const item = dataStore[activeIdx];
+            ui.pageLabel.textContent = Math.floor(activeIdx / 6) + 1;
+            ui.slotLabel.textContent = (activeIdx % 6) + 1;
+            ui.totalCount.textContent = `Total: ${dataStore.length} slots`;
             
-            ui.q.style.fontFamily = fonts[window.activeFont].css;
-            ui.a.style.fontFamily = fonts[window.activeFont].css;
-            ui.a.style.backgroundColor = themes[window.activeTheme].bg;
-            ui.a.style.borderColor = themes[window.activeTheme].border;
+            ui.q.style.fontFamily = fonts[activeFont].css;
+            ui.a.style.fontFamily = fonts[activeFont].css;
+            ui.a.style.backgroundColor = themes[activeTheme].bg;
+            ui.a.style.borderColor = themes[activeTheme].border;
 
             ui.q.value = item.questions;
             ui.a.value = item.answers;
@@ -509,7 +313,7 @@
                 ui.thumbContainer.innerHTML = item.images.map((img, i) => `
                     <div class="relative shrink-0 w-12 h-12 bg-white rounded border border-[#E9E9E7] p-1 group">
                         <img src="${img}" class="w-full h-full object-cover rounded-sm" />
-                        <button onclick="window.removeImage(${i})" class="absolute -top-1.5 -right-1.5 bg-[#EB5757] text-white rounded-full p-0.5 hidden group-hover:block transition-colors">
+                        <button onclick="removeImage(${i})" class="absolute -top-1.5 -right-1.5 bg-[#EB5757] text-white rounded-full p-0.5 hidden group-hover:block transition-colors">
                             <i data-lucide="x" size="12"></i>
                         </button>
                     </div>
@@ -519,26 +323,26 @@
                 ui.dropZone.classList.add('h-28'); ui.dropZone.classList.remove('h-14');
             }
             
-            const btnIcon = window.activeIdx === window.dataStore.length - 1 ? 'file-plus' : 'arrow-right';
-            const btnText = window.activeIdx === window.dataStore.length - 1 ? 'Save & Add Page' : 'Save & Edit Next Slot';
+            const btnIcon = activeIdx === dataStore.length - 1 ? 'file-plus' : 'arrow-right';
+            const btnText = activeIdx === dataStore.length - 1 ? 'Save & Add Page' : 'Save & Edit Next Slot';
             ui.next.innerHTML = `<span>${btnText}</span> <i data-lucide="${btnIcon}" size="16"></i>`;
             lucide.createIcons();
-        };
+        }
 
-        window.refreshPreview = function() {
-            const totalPages = window.dataStore.length / 6;
+        function refreshPreview() {
+            const totalPages = dataStore.length / 6;
             let fullHtml = '';
 
             for (let p = 0; p < totalPages; p++) {
                 let pageSlotsHtml = '';
                 for (let i = 0; i < 6; i++) {
                     const globalIdx = (p * 6) + i;
-                    const s = window.dataStore[globalIdx];
+                    const s = dataStore[globalIdx];
                     let borderStyle = 'border-color: #E9E9E7; border-style: solid; border-width: 0; border-right-width: ' + (i % 2 === 0 ? '2px; ' : '0; ');
                     if (i < 4) borderStyle += 'border-bottom-width: 2px; ';
                     
-                    let activeClass = globalIdx === window.activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
-                    let activeIdAttr = globalIdx === window.activeIdx ? 'id="active-slot-element"' : '';
+                    let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8] transition-colors';
+                    let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
 
                     let imgHtml = '';
                     if (s.images.length > 0) {
@@ -553,23 +357,23 @@
                     }
 
                     pageSlotsHtml += `
-                        <div ${activeIdAttr} onclick="window.goto(${globalIdx})" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${borderStyle} padding: 28px; box-sizing: border-box;">
+                        <div ${activeIdAttr} onclick="goto(${globalIdx})" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${borderStyle} padding: 28px; box-sizing: border-box;">
                             ${imgHtml}
                             <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%; flex-shrink: 0;">
-                                ${s.questions ? `<div style="font-family: ${fonts[window.activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word;">${s.questions}</div>` : ''}
-                                ${s.answers ? `<div style="font-family: ${fonts[window.activeFont].css}; background-color: ${themes[window.activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word;">${s.answers}</div>` : ''}
+                                ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word;">${s.questions}</div>` : ''}
+                                ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word;">${s.answers}</div>` : ''}
                             </div>
                         </div>
                     `;
                 }
-                const delBtn = totalPages > 1 ? `<button onclick="window.removePage(${p})" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors"><i data-lucide="trash-2" size="14"></i></button>` : '';
-                fullHtml += `<div class="w-full flex flex-col items-center group relative"><div class="w-full max-w-[794px] mb-2 flex items-center px-1"><span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-widest">Page ${p + 1}</span>${delBtn}</div><div class="a4-wrapper"><div class="a4-page" id="page-${p}">${pageSlotsHtml}</div></div></div>`;
+                fullHtml += `<div class="w-full flex flex-col items-center group relative"><div class="a4-wrapper"><div class="a4-page" id="page-${p}">${pageSlotsHtml}</div></div></div>`;
             }
 
             ui.grid.innerHTML = fullHtml;
+            // Important: Use requestAnimationFrame to ensure the DOM has updated before scaling
             requestAnimationFrame(scalePages);
             lucide.createIcons();
-        };
+        }
 
         function scrollToActive() {
             setTimeout(() => {
@@ -583,29 +387,23 @@
             const files = Array.from(e.target.files);
             files.forEach(file => {
                 const r = new FileReader();
-                r.onload = (ev) => { window.dataStore[window.activeIdx].images.push(ev.target.result); window.refreshPreview(); window.refreshEditor(); triggerCloudSave(); };
+                r.onload = (ev) => { dataStore[activeIdx].images.push(ev.target.result); refreshPreview(); refreshEditor(); };
                 r.readAsDataURL(file);
             });
             ui.file.value = ""; 
         };
 
-        window.removeImage = (imgIdx) => { window.dataStore[window.activeIdx].images.splice(imgIdx, 1); window.refreshPreview(); window.refreshEditor(); triggerCloudSave(); };
-        window.goto = (idx) => { window.activeIdx = idx; window.refreshEditor(); window.refreshPreview(); scrollToActive(); };
+        window.removeImage = (imgIdx) => { dataStore[activeIdx].images.splice(imgIdx, 1); refreshPreview(); refreshEditor(); };
+        window.goto = (idx) => { activeIdx = idx; refreshEditor(); refreshPreview(); scrollToActive(); };
 
         ui.next.onclick = () => {
-            window.dataStore[window.activeIdx].filled = true;
-            if (window.activeIdx < window.dataStore.length - 1) { window.activeIdx++; window.refreshEditor(); window.refreshPreview(); scrollToActive(); }
-            else { window.addNewPage(); }
-            triggerCloudSave();
+            dataStore[activeIdx].filled = true;
+            if (activeIdx < dataStore.length - 1) { activeIdx++; refreshEditor(); refreshPreview(); scrollToActive(); }
+            else { addNewPage(); }
         };
 
         document.getElementById('clearBtn').onclick = () => {
-            if(confirm("Erase all data?")) { 
-                window.dataStore = []; 
-                window.activeIdx = 0; 
-                window.addNewPage(true); 
-                if (window.clearCloudData) window.clearCloudData();
-            }
+            if(confirm("Erase all data and reset?")) { dataStore = []; activeIdx = 0; addNewPage(true); }
         };
 
         async function buildPDF() {
@@ -615,8 +413,8 @@
 
             const doc = new jsPDF('p', 'mm', 'a4');
             const cW = 210 / 2, cH = 297 / 3, pad = 8; 
-            const activeRGB = themes[window.activeTheme].rgb, activeJsPdfFont = fonts[window.activeFont].jspdf;
-            const totalPages = window.dataStore.length / 6;
+            const activeRGB = themes[activeTheme].rgb, activeJsPdfFont = fonts[activeFont].jspdf;
+            const totalPages = dataStore.length / 6;
 
             for (let p = 0; p < totalPages; p++) {
                 if (p > 0) doc.addPage(); 
@@ -624,7 +422,7 @@
                 doc.line(cW, 0, cW, 297); doc.line(0, cH, 210, cH); doc.line(0, cH * 2, 210, cH * 2);
 
                 for (let i = 0; i < 6; i++) {
-                    const s = window.dataStore[(p * 6) + i];
+                    const s = dataStore[(p * 6) + i];
                     const x = (i % 2) * cW, y = Math.floor(i / 2) * cH;
                     let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
 
@@ -668,11 +466,16 @@
         }
         document.getElementById('downloadBtn').onclick = buildPDF;
 
-        // Start initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            // No need to manually call addNewPage here, 
-            // the Firebase listener will call refresh once logged in
-        });
+        // Final Scale adjustment
+        window.addEventListener('resize', scalePages);
+
+        // Immediate logic trigger
+        (function init() {
+            initStylingControls();
+            addNewPage(false);
+            refreshEditor();
+            refreshPreview();
+        })();
     </script>
 </body>
 </html>
