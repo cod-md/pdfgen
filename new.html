@@ -146,9 +146,9 @@
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Image Size:</span>
                                 <select id="imgSizeSelect" onchange="changeImgSize(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none cursor-pointer">
-                                    <option value="60">Small</option>
-                                    <option value="100" selected>Normal</option>
-                                    <option value="150">Large</option>
+                                    <option value="50">Small</option>
+                                    <option value="75" selected>Normal</option>
+                                    <option value="100">Large</option>
                                 </select>
                             </div>
                         </div>
@@ -170,7 +170,7 @@
                             
                             <button id="autoFitBtn" onclick="toggleAutoFit()" class="flex items-center gap-1.5 text-xs font-bold border border-[#E9E9E7] rounded px-3 py-1 bg-white text-[#37352F] hover:bg-[#F9F9F8] transition-colors shadow-sm">
                                 <i data-lucide="maximize" size="14"></i>
-                                Auto-Fit (Independent Cells)
+                                Auto-Fit Content
                             </button>
                         </div>
                     </div>
@@ -227,7 +227,7 @@
         let activeTheme = 'pink';
         let activeFont = 'sans';
         let activeFontSize = 10;
-        let activeImgSize = 100;
+        let activeImgSize = 75; // Represents scale width percentage (50, 75, 100)
         let isAutoFit = false;
 
         const themes = {
@@ -300,28 +300,32 @@
                 let reqH = pad * 2; 
                 let hasContent = false;
 
-                // 1. Calculate height of images
+                // 1. Calculate height of images dynamically based on Scale
                 if (s.images.length > 0) {
                     let imgCols = s.images.length === 1 ? 1 : 2;
-                    let availW = cW - (pad * 2);
+                    let scaleW = activeImgSize / 100;
+                    let availW = (cW - (pad * 2)) * scaleW;
                     let gap = 3;
                     let iW = (availW - (imgCols - 1) * gap) / imgCols;
                     let maxImgH = 0;
+                    let limitH = 150 * scaleW; // Proportionally scale max height boundary
+
                     s.images.forEach(src => {
                         try {
                             const props = dummyDoc.getImageProperties(src);
                             const ratio = props.height / props.width;
                             let fH = iW * ratio;
+                            if (fH > limitH) fH = limitH;
                             if (fH > maxImgH) maxImgH = fH;
                         } catch(e) {}
                     });
-                    if (maxImgH > activeImgSize) maxImgH = activeImgSize; 
+                    
                     let rows = Math.ceil(s.images.length / imgCols);
                     reqH += (maxImgH * rows) + (rows - 1)*gap;
                     hasContent = true;
                 }
 
-                // 2. Add Exactly 1 Line Gap between Image and Text
+                // 2. Exact 1 Line Gap between Image and Text
                 if (hasContent && (s.questions || s.answers)) {
                     reqH += activeFontSize * 0.35; 
                 }
@@ -346,13 +350,10 @@
                 if (!hasContent) reqH += 40; 
                 if (reqH > pH - 16) reqH = pH - 16; 
 
-                // Store slot info temporarily
                 tempRowSlots.push({ data: s, reqH: reqH, colIdx: colIdx, originalIdx: i });
 
-                // Check for Page Overflow
                 if (colY[colIdx] + reqH > pH) rowWillOverflow = true;
 
-                // When a full row is evaluated (or end of data)
                 if (colIdx === cols - 1 || i === dataStore.length - 1) {
                     if (rowWillOverflow && currentPageSlots.length > 0) {
                         pages.push(currentPageSlots);
@@ -360,7 +361,6 @@
                         colY = new Array(cols).fill(0);
                     }
                     
-                    // Assign actual Y positions independently
                     tempRowSlots.forEach(slot => {
                         slot.y = colY[slot.colIdx];
                         slot.x = slot.colIdx * cW;
@@ -525,8 +525,9 @@
                         if (s.images.length > 0) {
                             let iCols = s.images.length === 1 ? 1 : 2;
                             let gapMargin = activeFontSize * 1.4; 
-                            imgHtml = `<div style="width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: ${gapMargin}px;">`;
-                            s.images.forEach(img => imgHtml += `<div style="width: 100%; display: flex; justify-content: center;"><img src="${img}" style="max-width: 100%; max-height: ${activeImgSize * 3.78}px; object-fit: contain;" /></div>`);
+                            let limitPx = 300 * (activeImgSize / 100);
+                            imgHtml = `<div style="width: ${activeImgSize}%; margin: 0 auto ${gapMargin}px auto; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px;">`;
+                            s.images.forEach(img => imgHtml += `<div style="width: 100%; display: flex; justify-content: center;"><img src="${img}" style="max-width: 100%; max-height: ${limitPx}px; object-fit: contain;" /></div>`);
                             imgHtml += `</div>`;
                         } else {
                             imgHtml = `<div style="width: 100%; display: flex; justify-content: center; margin-bottom: 12px;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
@@ -577,7 +578,8 @@
                         let imgHtml = '';
                         if (s.images.length > 0) {
                             let iCols = s.images.length === 1 ? 1 : 2;
-                            imgHtml = `<div style="flex: 1; width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; min-height: 0;">`;
+                            let maxH = activeImgSize * 0.45; // 50 -> 22.5%, 75 -> 33.7%, 100 -> 45%
+                            imgHtml = `<div style="flex: 1; max-height: ${maxH}%; width: ${activeImgSize}%; margin: 0 auto 12px auto; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; min-height: 0;">`;
                             s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></div>`);
                             imgHtml += `</div>`;
                         } else {
@@ -659,19 +661,23 @@
                                 let imgCols = s.images.length === 1 ? 1 : 2;
                                 let imgRows = Math.ceil(s.images.length / imgCols);
                                 let gap = 3;
-                                let availW = cW - (pad * 2);
+                                
+                                let scaleW = activeImgSize / 100;
+                                let availW = (cW - (pad * 2)) * scaleW;
+                                let xOffset = (cW - (pad * 2) - availW) / 2;
                                 let iW = (availW - (imgCols - 1)*gap) / imgCols;
                                 
+                                let limitH = 150 * scaleW;
                                 let maxImgH = 0;
                                 s.images.forEach(src => {
                                     try {
                                         const props = doc.getImageProperties(src);
                                         const ratio = props.height / props.width;
                                         let fH = iW * ratio;
+                                        if (fH > limitH) fH = limitH;
                                         if (fH > maxImgH) maxImgH = fH;
                                     } catch(e) {}
                                 });
-                                if (maxImgH > activeImgSize) maxImgH = activeImgSize;
                                 
                                 s.images.forEach((src, idx) => {
                                     try {
@@ -679,7 +685,7 @@
                                         const ratio = props.height / props.width;
                                         let fW = iW, fH = fW * ratio;
                                         if (fH > maxImgH) { fH = maxImgH; fW = fH / ratio; }
-                                        const cx = slot.x + pad + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
+                                        const cx = slot.x + pad + xOffset + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
                                         const cy = currentY + Math.floor(idx / imgCols) * (maxImgH + gap) + (maxImgH - fH) / 2;
                                         doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
                                     } catch(e) {}
@@ -760,10 +766,14 @@
 
                             if (s.images.length > 0) {
                                 let totalAvailH = qY - y - pad - 2;
-                                let imgBlockH = Math.min(totalAvailH, activeImgSize);
+                                let scaleW = activeImgSize / 100;
+                                let limitH = 150 * scaleW;
+                                let imgBlockH = Math.min(totalAvailH, limitH);
                                 let yOffset = Math.max(0, (totalAvailH - imgBlockH) / 2); 
                                 
-                                let availW = cW - (pad * 2);
+                                let availW = (cW - (pad * 2)) * scaleW;
+                                let xOffset = Math.max(0, (cW - (pad * 2) - availW) / 2);
+
                                 let imgCols = s.images.length === 1 ? 1 : 2;
                                 let imgRows = Math.ceil(s.images.length / imgCols);
                                 let gap = 3;
@@ -776,7 +786,7 @@
                                         const ratio = props.height / props.width;
                                         let fW = iW, fH = fW * ratio;
                                         if (fH > iH) { fH = iH; fW = fH / ratio; }
-                                        const cx = x + pad + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
+                                        const cx = x + pad + xOffset + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
                                         const cy = y + pad + yOffset + Math.floor(idx / imgCols) * (iH + gap) + (iH - fH) / 2;
                                         doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
                                     } catch(e) {}
@@ -808,5 +818,6 @@
     </script>
 </body>
 </html>
+
 
 
