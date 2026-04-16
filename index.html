@@ -72,6 +72,8 @@
 
         textarea { transition: border-color 0.1s ease; }
         textarea:focus { border-color: #9B9A97 !important; box-shadow: none !important; }
+
+        .thumb-scroll::-webkit-scrollbar { height: 4px; }
     </style>
 </head>
 <body class="p-4 md:p-6 lg:p-8">
@@ -111,33 +113,36 @@
                     </div>
 
                     <!-- Styling Toolbar with Grid Selector -->
-                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-10 gap-y-4">
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Color:</span>
-                            <div class="flex gap-2" id="colorSwatches"></div>
+                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-8 gap-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Theme:</span>
+                            <div class="flex gap-1.5" id="colorSwatches"></div>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Font:</span>
-                            <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded-md px-2 py-1 bg-white outline-none">
+                            <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none">
                                 <option value="sans">Modern</option>
                                 <option value="serif">Classic</option>
                                 <option value="mono">Typewriter</option>
                             </select>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Grid:</span>
-                            <select id="gridSelect" onchange="changeGrid(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded-md px-2 py-1 bg-white outline-none">
+                            <select id="gridSelect" onchange="changeGrid(this.value)" class="text-xs font-bold border border-[#E9E9E7] rounded px-2 py-1 bg-white outline-none">
                                 <option value="1">1 Slot</option>
                                 <option value="2">2 Slots</option>
+                                <option value="3">3 Slots</option>
                                 <option value="4">4 Slots</option>
                                 <option value="6" selected>6 Slots</option>
+                                <option value="8">8 Slots</option>
+                                <option value="9">9 Slots</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="p-6 space-y-6">
                         <div>
-                            <label class="block text-xs font-bold text-[#37352F] mb-2 uppercase tracking-widest text-[#9B9A97]">1. Images</label>
+                            <label class="block text-xs font-bold text-[#9B9A97] mb-2 uppercase tracking-widest">1. Images</label>
                             <div id="thumbContainer" class="hidden w-full bg-[#F7F7F5] border border-[#E9E9E7] rounded-md p-2 mb-2 flex gap-2 overflow-x-auto thumb-scroll"></div>
                             <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="relative group w-full h-24 rounded-md border border-dashed border-[#D3D3D1] bg-[#F7F7F5] flex flex-col items-center justify-center cursor-pointer hover:border-[#9B9A97] transition-all">
                                 <i data-lucide="image-plus" class="text-[#9B9A97] w-5 h-5 mb-1"></i>
@@ -147,12 +152,12 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-[#37352F] mb-2 uppercase tracking-widest text-[#9B9A97]">2. Questions</label>
+                            <label class="block text-xs font-bold text-[#9B9A97] mb-2 uppercase tracking-widest">2. Questions</label>
                             <textarea id="qInput" oninput="saveText()" class="w-full h-20 p-3 rounded-md border border-[#E9E9E7] bg-[#F7F7F5] outline-none text-sm font-semibold resize-none text-[#37352F]" placeholder="A) Diagnosis?"></textarea>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-[#37352F] mb-2 uppercase tracking-widest text-[#9B9A97]">3. Answers</label>
+                            <label class="block text-xs font-bold text-[#9B9A97] mb-2 uppercase tracking-widest">3. Answers</label>
                             <textarea id="aInput" oninput="saveText()" class="w-full h-20 p-3 rounded-md border outline-none text-sm text-[#37352F] font-bold resize-none" placeholder="A) Result here..."></textarea>
                         </div>
 
@@ -163,7 +168,7 @@
 
             <div class="lg:col-span-7 flex flex-col h-[calc(100vh-6rem)]">
                 <div class="flex justify-between items-end mb-3 shrink-0 px-1">
-                    <h3 class="text-sm font-bold text-[#37352F] mb-0.5 uppercase tracking-widest text-[#9B9A97]">Workspace</h3>
+                    <h3 class="text-sm font-bold text-[#9B9A97] mb-0.5 uppercase tracking-widest">Workspace</h3>
                 </div>
                 <div id="previewScrollArea" class="bg-[#EFEFED] p-4 sm:p-8 rounded-lg border border-[#E9E9E7] overflow-y-auto thumb-scroll flex-1 shadow-inner relative">
                     <div id="gridPreview" class="relative flex flex-col gap-10 items-center w-full max-w-3xl mx-auto pb-8 z-10"></div>
@@ -185,7 +190,8 @@
             blue:   { bg: '#E4F0FB', border: '#E6EEF5', rgb: [228, 240, 251] },
             green:  { bg: '#E4FBEA', border: '#E6F5E9', rgb: [228, 251, 234] },
             yellow: { bg: '#FBF4E4', border: '#F5EFE6', rgb: [251, 244, 228] },
-            purple: { bg: '#EBE4FB', border: '#EAE6F5', rgb: [235, 228, 251] }
+            purple: { bg: '#EBE4FB', border: '#EAE6F5', rgb: [235, 228, 251] },
+            slate:  { bg: '#F1F1F1', border: '#E9E9E7', rgb: [241, 241, 241] }
         };
 
         const fonts = {
@@ -202,20 +208,33 @@
             scrollArea: document.getElementById('previewScrollArea')
         };
 
+        // --- Layout Helpers ---
+        function getGridLayout(slots) {
+            let cols = 1, rows = 1;
+            if (slots === 1) { cols = 1; rows = 1; }
+            else if (slots === 2) { cols = 1; rows = 2; }
+            else if (slots === 3) { cols = 1; rows = 3; }
+            else if (slots === 4) { cols = 2; rows = 2; }
+            else if (slots === 6) { cols = 2; rows = 3; }
+            else if (slots === 8) { cols = 2; rows = 4; }
+            else if (slots === 9) { cols = 3; rows = 3; }
+            return { cols, rows };
+        }
+
         // --- Core Logic ---
 
         function saveToStorage() {
             const state = { activeIdx, dataStore, slotsPerPage, activeTheme, activeFont };
-            localStorage.setItem('medical_builder_data', JSON.stringify(state));
+            localStorage.setItem('medical_builder_data_v2', JSON.stringify(state));
         }
 
         function loadFromStorage() {
-            const saved = localStorage.getItem('medical_builder_data');
+            const saved = localStorage.getItem('medical_builder_data_v2');
             if (saved) {
                 const state = JSON.parse(saved);
                 activeIdx = state.activeIdx || 0;
                 dataStore = state.dataStore || [];
-                slotsPerPage = state.slotsPerPage || 6;
+                slotsPerPage = parseInt(state.slotsPerPage) || 6;
                 activeTheme = state.activeTheme || 'pink';
                 activeFont = state.activeFont || 'sans';
                 
@@ -227,6 +246,7 @@
         }
 
         function saveText() {
+            if (!dataStore[activeIdx]) return;
             dataStore[activeIdx].questions = ui.q.value;
             dataStore[activeIdx].answers = ui.a.value;
             saveToStorage();
@@ -245,12 +265,19 @@
 
         function changeGrid(val) {
             slotsPerPage = parseInt(val);
-            // Re-align data store to ensure it has full pages
+            // Pad dataStore to match new page size
             const totalItems = dataStore.length;
-            const needed = Math.ceil(totalItems / slotsPerPage) * slotsPerPage;
-            while (dataStore.length < needed) dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
-            activeIdx = 0;
+            const remainder = totalItems % slotsPerPage;
+            if (remainder !== 0) {
+                const needed = slotsPerPage - remainder;
+                for (let i = 0; i < needed; i++) {
+                    dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
+                }
+            }
+            // Ensure activeIdx is valid
+            if (activeIdx >= dataStore.length) activeIdx = dataStore.length - 1;
             refreshAll();
+            scrollToActive();
         }
 
         function addNewPage(shouldRefresh = true) {
@@ -266,9 +293,9 @@
 
         function removePage(pIdx) {
             if (dataStore.length <= slotsPerPage) return;
-            if (confirm("Delete this page?")) {
+            if (confirm("Delete this entire page and all its content?")) {
                 dataStore.splice(pIdx * slotsPerPage, slotsPerPage);
-                activeIdx = 0;
+                activeIdx = Math.max(0, activeIdx - slotsPerPage);
                 refreshAll();
             }
         }
@@ -302,8 +329,8 @@
         }
 
         function clearAllData() {
-            if(confirm("Erase everything?")) {
-                localStorage.removeItem('medical_builder_data');
+            if(confirm("This will permanently erase all data on all pages. Continue?")) {
+                localStorage.removeItem('medical_builder_data_v2');
                 location.reload();
             }
         }
@@ -332,11 +359,12 @@
         function refreshAll() {
             saveToStorage();
             const item = dataStore[activeIdx];
+            if (!item) return;
             
             // Update Editor Labels
             document.getElementById('pageLabel').textContent = Math.floor(activeIdx / slotsPerPage) + 1;
             document.getElementById('slotLabel').textContent = (activeIdx % slotsPerPage) + 1;
-            document.getElementById('totalSlotsCount').textContent = `Total: ${dataStore.length} slots`;
+            document.getElementById('totalSlotsCount').textContent = `${dataStore.length / slotsPerPage} Pages / ${dataStore.length} Slots`;
             
             // Update Editor Styles
             ui.q.style.fontFamily = fonts[activeFont].css;
@@ -361,51 +389,49 @@
             }
 
             // Render Preview Pages
-            const totalPages = dataStore.length / slotsPerPage;
+            const totalPages = Math.ceil(dataStore.length / slotsPerPage);
             let fullHtml = '';
+            const { cols, rows } = getGridLayout(slotsPerPage);
 
             for (let p = 0; p < totalPages; p++) {
                 let pageSlotsHtml = '';
-                
-                // Determine grid template for this layout
-                let gridCols = (slotsPerPage === 1 || slotsPerPage === 2) ? 1 : 2;
-                let gridRows = Math.ceil(slotsPerPage / gridCols);
-                let gridStyle = `grid-template-columns: repeat(${gridCols}, 1fr); grid-template-rows: repeat(${gridRows}, 1fr);`;
+                let gridStyle = `grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);`;
 
                 for (let i = 0; i < slotsPerPage; i++) {
                     const globalIdx = (p * slotsPerPage) + i;
                     const s = dataStore[globalIdx];
+                    if (!s) continue;
                     
                     let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8]';
                     let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
 
                     // Grid border logic
                     let border = 'border-color: #E9E9E7; border-style: solid; border-width: 0;';
-                    if (gridCols === 2 && i % 2 === 0) border += ' border-right-width: 2px;';
-                    if (i < (slotsPerPage - gridCols)) border += ' border-bottom-width: 2px;';
+                    if (cols > 1 && i % cols < cols - 1) border += ' border-right-width: 2px;';
+                    if (rows > 1 && i < (slotsPerPage - cols)) border += ' border-bottom-width: 2px;';
 
                     let imgHtml = '';
                     if (s.images.length > 0) {
-                        let cols = s.images.length === 1 ? 1 : 2;
-                        imgHtml = `<div style="flex: 1; width: 100%; display: grid; grid-template-columns: repeat(${cols}, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; min-height: 0;">`;
+                        let iCols = s.images.length === 1 ? 1 : 2;
+                        imgHtml = `<div style="flex: 1; width: 100%; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; min-height: 0;">`;
                         s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></div>`);
                         imgHtml += `</div>`;
                     } else {
-                        imgHtml = `<div style="flex: 1; display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">P${p+1} Slot ${i+1}</span></div>`;
+                        imgHtml = `<div style="flex: 1; display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Empty Slot ${i+1}</span></div>`;
                     }
 
                     pageSlotsHtml += `
-                        <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${border} padding: 28px; box-sizing: border-box;">
+                        <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${border} padding: 24px; box-sizing: border-box;">
                             ${imgHtml}
                             <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%;">
-                                ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px;">${s.questions}</div>` : ''}
-                                ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px;">${s.answers}</div>` : ''}
+                                ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: 8px;">${s.questions}</div>` : ''}
+                                ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px;">${s.answers}</div>` : ''}
                             </div>
                         </div>
                     `;
                 }
 
-                const delBtn = totalPages > 1 ? `<button onclick="removePage(${p})" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors"><i data-lucide="trash-2" size="14"></i></button>` : '';
+                const delBtn = totalPages > 1 ? `<button onclick="removePage(${p})" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors p-1" title="Delete Page"><i data-lucide="trash-2" size="14"></i></button>` : '';
                 fullHtml += `
                     <div class="w-full flex flex-col items-center">
                         <div class="w-full max-w-[794px] mb-2 flex items-center px-1">
@@ -421,7 +447,7 @@
             requestAnimationFrame(scalePages);
             
             const isLast = activeIdx === dataStore.length - 1;
-            ui.next.innerHTML = `<span>${isLast ? 'Save & Add Page' : 'Save & Next Slot'}</span> <i data-lucide="${isLast ? 'file-plus' : 'arrow-right'}" size="16"></i>`;
+            ui.next.innerHTML = `<span>${isLast ? 'Save & New Page' : 'Save & Next Slot'}</span> <i data-lucide="${isLast ? 'file-plus' : 'arrow-right'}" size="16"></i>`;
             lucide.createIcons();
         }
 
@@ -435,14 +461,13 @@
         async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true; const original = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner"></div> <span>Exporting...</span>`;
+            btn.innerHTML = `<div class="spinner"></div> <span>Processing...</span>`;
 
             const doc = new jsPDF('p', 'mm', 'a4');
             const pW = 210, pH = 297, pad = 8;
             
-            let gridCols = (slotsPerPage === 1 || slotsPerPage === 2) ? 1 : 2;
-            let gridRows = Math.ceil(slotsPerPage / gridCols);
-            const cW = pW / gridCols, cH = pH / gridRows;
+            const { cols, rows } = getGridLayout(slotsPerPage);
+            const cW = pW / cols, cH = pH / rows;
 
             const rgb = themes[activeTheme].rgb, fName = fonts[activeFont].jspdf;
             const totalPages = dataStore.length / slotsPerPage;
@@ -452,12 +477,14 @@
                 
                 // Draw Grid lines
                 doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
-                for(let c=1; c<gridCols; c++) doc.line(c*cW, 0, c*cW, pH);
-                for(let r=1; r<gridRows; r++) doc.line(0, r*cH, pW, r*cH);
+                for(let c=1; c < cols; c++) doc.line(c*cW, 0, c*cW, pH);
+                for(let r=1; r < rows; r++) doc.line(0, r*cH, pW, r*cH);
 
                 for (let i = 0; i < slotsPerPage; i++) {
                     const s = dataStore[(p * slotsPerPage) + i];
-                    const x = (i % gridCols) * cW, y = Math.floor(i / gridCols) * cH;
+                    if (!s) continue;
+
+                    const x = (i % cols) * cW, y = Math.floor(i / cols) * cH;
                     
                     let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
                     if (s.answers) {
@@ -496,7 +523,7 @@
                     }
                 }
             }
-            doc.save(`Summary_${Date.now()}.pdf`);
+            doc.save(`Medical_Summary_${Date.now()}.pdf`);
             btn.disabled = false; btn.innerHTML = original; lucide.createIcons();
         }
 
@@ -509,3 +536,4 @@
     </script>
 </body>
 </html>
+
