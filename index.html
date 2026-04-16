@@ -258,7 +258,6 @@
         function changeTheme(key) {
             activeTheme = key;
             initStylingControls();
-            // Just update visual styles without losing text data
             ui.a.style.backgroundColor = themes[activeTheme].bg;
             ui.a.style.borderColor = themes[activeTheme].border;
             refreshPreview(); 
@@ -270,9 +269,6 @@
             ui.a.style.fontFamily = fonts[activeFont].css;
             refreshPreview();
         }
-
-        initStylingControls();
-        addNewPage(false);
 
         function addNewPage(shouldRefresh = true) {
             const startId = dataStore.length;
@@ -297,7 +293,6 @@
         
         window.addEventListener('resize', scalePages);
 
-        // Update just the textareas when switching slots
         function refreshEditor() {
             const item = dataStore[activeIdx];
             ui.pageLabel.textContent = Math.floor(activeIdx / 6) + 1;
@@ -334,7 +329,6 @@
             lucide.createIcons();
         }
 
-        // Update the visual grid (not on every keystroke, only on changes/navigation)
         function refreshPreview() {
             const totalPages = dataStore.length / 6;
             let fullHtml = '';
@@ -470,6 +464,15 @@
             btn.disabled = false; btn.innerHTML = original; lucide.createIcons();
         }
         document.getElementById('downloadBtn').onclick = buildPDF;
+
+        // --- Initialize App On Load ---
+        window.onload = function() {
+            initStylingControls();
+            addNewPage(false); // Create initial slot structure
+            refreshEditor();   // Render editor fields
+            refreshPreview();  // Render workspace preview
+            lucide.createIcons(); // Initialize all icons
+        };
     </script>
 </body>
 </html>
