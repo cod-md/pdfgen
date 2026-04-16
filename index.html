@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Study Sheet - Standardized Layout</title>
+    <title>Medical Study Sheet Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .active-slot { border-color: #2563eb !important; background-color: #eff6ff; ring: 4px; ring-color: #dbeafe; }
         .spinner {
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -20,7 +21,6 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .active-cell { border-color: #3b82f6 !important; ring: 4px; ring-color: #dbeafe; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -30,83 +30,87 @@
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                    <i data-lucide="layout-grid" class="text-blue-600"></i>
-                    Standardized Sheet Builder
+                    <i data-lucide="clipboard-list" class="text-blue-600"></i>
+                    Study Sheet Builder
                 </h1>
-                <p class="text-slate-500">Fixed-position layout for uniform medical study sheets.</p>
+                <p class="text-slate-500">Create standardized 2x3 grid medical sheets.</p>
             </div>
-            <div class="flex gap-3">
-                <button id="resetBtn" class="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors">Clear All</button>
-                <button id="downloadBtn" class="flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-6 py-3 rounded-xl font-semibold shadow-xl transition-all active:scale-95 disabled:opacity-50">
-                    <i data-lucide="file-down" size="18"></i>
-                    Download A4 PDF
+            <div class="flex items-center gap-4">
+                <button id="clearBtn" class="text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors">Clear All</button>
+                <button id="downloadBtn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
+                    <i data-lucide="download" size="18"></i>
+                    Generate A4 PDF
                 </button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
-            <!-- Editor (Left) -->
+            <!-- STEP-BY-STEP EDITOR (Left) -->
             <div class="lg:col-span-5">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-8">
-                    <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
-                        <h2 class="font-bold flex items-center gap-2 uppercase tracking-tighter">
-                            Editing Slot <span id="currentSlotLabel" class="bg-blue-500 px-2 rounded">1</span>
-                        </h2>
-                        <div class="flex gap-1.5" id="paginationDots"></div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden sticky top-8">
+                    <div class="bg-slate-900 px-6 py-5 text-white flex justify-between items-center">
+                        <span class="font-bold text-sm tracking-widest uppercase">Input: Slot <span id="slotLabel">1</span></span>
+                        <div class="flex gap-1" id="navDots"></div>
                     </div>
 
-                    <div class="p-6 space-y-5">
-                        <!-- Image -->
+                    <div class="p-6 space-y-6">
+                        <!-- Image Upload -->
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Top Section: Image</label>
-                            <div id="dropZone" class="relative group w-full h-48 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-all overflow-hidden">
-                                <div id="uploadPlaceholder" class="flex flex-col items-center text-center">
-                                    <i data-lucide="upload-cloud" class="text-slate-300 mb-2 w-8 h-8"></i>
-                                    <span class="text-xs text-slate-400 font-medium">Click to upload</span>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">1. Image Area (Top)</label>
+                            <div id="dropZone" class="relative group w-full h-44 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all overflow-hidden">
+                                <div id="uploadText" class="flex flex-col items-center">
+                                    <i data-lucide="image" class="text-slate-300 mb-2"></i>
+                                    <span class="text-xs text-slate-400">Add Patient Image</span>
                                 </div>
-                                <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-contain p-2" />
+                                <img id="previewImg" class="hidden absolute inset-0 w-full h-full object-contain p-2" />
                                 <input type="file" id="fileInput" class="hidden" accept="image/*">
                             </div>
                         </div>
 
-                        <!-- Questions -->
+                        <!-- Question Input -->
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Middle Section: Questions</label>
-                            <textarea id="qInput" class="w-full h-24 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-100 outline-none resize-none text-sm" placeholder="A) What is the diagnosis?"></textarea>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">2. Question Area (Middle)</label>
+                            <textarea id="qInput" class="w-full h-24 p-4 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm resize-none" placeholder="A) What is the clinical sign?&#10;B) What is the diagnosis?"></textarea>
                         </div>
 
-                        <!-- Answers -->
+                        <!-- Answer Input -->
                         <div>
-                            <label class="block text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">Bottom Section: Pink Answer Box</label>
-                            <textarea id="aInput" class="w-full h-24 p-3 rounded-xl border border-rose-100 bg-rose-50/50 focus:ring-2 focus:ring-rose-100 outline-none resize-none text-sm text-rose-900 font-medium" placeholder="A) Diagnosis Name"></textarea>
+                            <label class="block text-[10px] font-black text-rose-400 uppercase tracking-widest mb-2">3. Answer Area (Bottom Pink Box)</label>
+                            <textarea id="aInput" class="w-full h-24 p-4 rounded-2xl border border-rose-100 bg-rose-50/50 focus:bg-white focus:ring-4 focus:ring-rose-50 outline-none transition-all text-sm text-rose-900 font-semibold resize-none" placeholder="A) Koilonychia&#10;B) Iron Deficiency Anemia"></textarea>
                         </div>
 
-                        <button id="registerBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-100 transition-all active:scale-95">
-                            Register & Go to Next
-                            <i data-lucide="chevron-right" size="18"></i>
+                        <button id="nextBtn" class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl shadow-slate-200">
+                            Save & Move to Next Slot
+                            <i data-lucide="arrow-right" size="18"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Preview (Right) -->
+            <!-- SHEET PREVIEW (Right) -->
             <div class="lg:col-span-7">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">A4 Layout Preview</h3>
-                    <div class="flex items-center gap-2 text-[10px] text-slate-400 uppercase font-bold">
-                        <span class="w-2 h-2 bg-emerald-400 rounded-full"></span> Filled
-                        <span class="w-2 h-2 bg-slate-200 rounded-full ml-2"></span> Empty
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Live 2x3 Grid Layout Preview</h3>
+                    <span class="text-[10px] text-slate-400 italic">Click any box to edit that slot</span>
+                </div>
+                
+                <div id="gridPreview" class="grid grid-cols-2 gap-4 bg-slate-300 p-2 rounded-3xl border border-slate-300">
+                    <!-- Boxes injected here -->
+                </div>
+
+                <div class="mt-6 p-5 bg-amber-50 rounded-2xl border border-amber-100 flex gap-4">
+                    <div class="bg-amber-100 text-amber-600 p-2 rounded-xl h-fit">
+                        <i data-lucide="check-square" size="20"></i>
                     </div>
-                </div>
-                
-                <div id="gridDisplay" class="grid grid-cols-2 gap-3 bg-slate-200 p-2 rounded-2xl border border-slate-300">
-                    <!-- 6 Cells generated via JS -->
-                </div>
-                
-                <div class="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-xl text-blue-700 text-xs flex gap-3">
-                    <i data-lucide="info" class="shrink-0" size="16"></i>
-                    <p>Positions are <b>locked</b>. Questions will always start at the middle and answers at the bottom of each compartment in the final PDF.</p>
+                    <div class="text-xs text-amber-800 leading-relaxed">
+                        <p class="font-bold mb-1">Standardized Vertical Alignment Active:</p>
+                        <ul class="list-disc ml-4 space-y-1">
+                            <li>Images will be centered in the top half.</li>
+                            <li>Questions will <b>always</b> start precisely in the middle.</li>
+                            <li>Answer boxes will <b>always</b> be locked to the bottom section.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,175 +119,163 @@
     <script>
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
-        let slots = Array.from({ length: 6 }, (_, i) => ({
-            id: i, image: null, imgW: 0, imgH: 0, questions: "", answers: "", isFilled: false
+        let dataStore = Array.from({ length: 6 }, (_, i) => ({
+            id: i, image: null, imgW: 0, imgH: 0, questions: "", answers: "", filled: false
         }));
 
-        const fileInput = document.getElementById('fileInput');
-        const imagePreview = document.getElementById('imagePreview');
-        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
-        const qInput = document.getElementById('qInput');
-        const aInput = document.getElementById('aInput');
-        const gridDisplay = document.getElementById('gridDisplay');
-        const registerBtn = document.getElementById('registerBtn');
-        const currentSlotLabel = document.getElementById('currentSlotLabel');
+        const ui = {
+            file: document.getElementById('fileInput'),
+            preview: document.getElementById('previewImg'),
+            uploadTxt: document.getElementById('uploadText'),
+            q: document.getElementById('qInput'),
+            a: document.getElementById('aInput'),
+            grid: document.getElementById('gridPreview'),
+            next: document.getElementById('nextBtn'),
+            label: document.getElementById('slotLabel'),
+            dots: document.getElementById('navDots')
+        };
 
-        function updateUI() {
-            renderPagination();
-            renderGrid();
-            loadSlotData();
-            lucide.createIcons();
-        }
-
-        function loadSlotData() {
-            const data = slots[activeIdx];
-            currentSlotLabel.textContent = activeIdx + 1;
-            qInput.value = data.questions;
-            aInput.value = data.answers;
-            if (data.image) {
-                imagePreview.src = data.image;
-                imagePreview.classList.remove('hidden');
-                uploadPlaceholder.classList.add('hidden');
+        function refresh() {
+            // Update Sidebar
+            const item = dataStore[activeIdx];
+            ui.label.textContent = activeIdx + 1;
+            ui.q.value = item.questions;
+            ui.a.value = item.answers;
+            if (item.image) {
+                ui.preview.src = item.image;
+                ui.preview.classList.remove('hidden');
+                ui.uploadTxt.classList.add('hidden');
             } else {
-                imagePreview.classList.add('hidden');
-                uploadPlaceholder.classList.remove('hidden');
+                ui.preview.classList.add('hidden');
+                ui.uploadTxt.classList.remove('hidden');
             }
-        }
 
-        function renderPagination() {
-            const container = document.getElementById('paginationDots');
-            container.innerHTML = slots.map((s, i) => `
-                <div class="w-1.5 h-1.5 rounded-full ${i === activeIdx ? 'bg-blue-400 w-4' : (s.isFilled ? 'bg-slate-400' : 'bg-slate-700')}"></div>
+            // Update Dots
+            ui.dots.innerHTML = dataStore.map((s, i) => `
+                <div class="w-1.5 h-1.5 rounded-full ${i === activeIdx ? 'bg-blue-400 w-4' : (s.filled ? 'bg-slate-500' : 'bg-slate-700')}"></div>
             `).join('');
-        }
 
-        function renderGrid() {
-            gridDisplay.innerHTML = slots.map((slot, i) => `
-                <div onclick="jumpTo(${i})" class="bg-white rounded-lg p-3 flex flex-col gap-2 cursor-pointer border-2 transition-all ${i === activeIdx ? 'active-cell' : 'border-transparent'}">
-                    <div class="text-[8px] font-black text-slate-300">BOX ${i+1}</div>
-                    <div class="h-24 bg-slate-50 rounded border border-slate-100 flex items-center justify-center overflow-hidden">
-                        ${slot.image ? `<img src="${slot.image}" class="h-full w-full object-contain" />` : `<i data-lucide="image" class="w-4 h-4 text-slate-200"></i>`}
+            // Update Grid
+            ui.grid.innerHTML = dataStore.map((s, i) => `
+                <div onclick="goto(${i})" class="bg-white rounded-2xl p-4 aspect-[3/4.2] flex flex-col gap-3 cursor-pointer border-4 transition-all ${i === activeIdx ? 'active-slot' : 'border-transparent shadow-sm'}">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black text-slate-300">BOX ${i+1}</span>
+                        ${s.filled ? '<i data-lucide="check-circle" class="text-emerald-400 w-3 h-3"></i>' : ''}
                     </div>
-                    <div class="space-y-1 py-1">
-                        <div class="h-1 w-full ${slot.questions ? 'bg-slate-300' : 'bg-slate-100'} rounded"></div>
-                        <div class="h-1 w-2/3 ${slot.questions ? 'bg-slate-300' : 'bg-slate-100'} rounded"></div>
+                    <div class="h-28 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center overflow-hidden">
+                        ${s.image ? `<img src="${s.image}" class="h-full w-full object-contain" />` : '<i data-lucide="image" class="w-4 h-4 text-slate-200"></i>'}
                     </div>
-                    <div class="mt-auto h-8 rounded border ${slot.answers ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}"></div>
+                    <div class="flex-1 space-y-2 py-1">
+                        <div class="h-1.5 w-full bg-slate-100 rounded"></div>
+                        <div class="h-1.5 w-3/4 bg-slate-100 rounded"></div>
+                    </div>
+                    <div class="h-10 rounded-xl border ${s.answers ? 'bg-rose-50 border-rose-100' : 'bg-slate-50 border-slate-100'}"></div>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        document.getElementById('dropZone').onclick = () => fileInput.click();
-        fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (re) => {
-                    const tempImg = new Image();
-                    tempImg.onload = () => {
-                        slots[activeIdx].image = re.target.result;
-                        slots[activeIdx].imgW = tempImg.width;
-                        slots[activeIdx].imgH = tempImg.height;
-                        updateUI();
+        // Logic
+        document.getElementById('dropZone').onclick = () => ui.file.click();
+        ui.file.onchange = (e) => {
+            const f = e.target.files[0];
+            if (f) {
+                const r = new FileReader();
+                r.onload = (ev) => {
+                    const i = new Image();
+                    i.onload = () => {
+                        dataStore[activeIdx].image = ev.target.result;
+                        dataStore[activeIdx].imgW = i.width;
+                        dataStore[activeIdx].imgH = i.height;
+                        refresh();
                     };
-                    tempImg.src = re.target.result;
+                    i.src = ev.target.result;
                 };
-                reader.readAsDataURL(file);
+                r.readAsDataURL(f);
             }
         };
 
-        window.jumpTo = (idx) => { activeIdx = idx; updateUI(); };
+        window.goto = (idx) => { activeIdx = idx; refresh(); };
 
-        registerBtn.onclick = () => {
-            slots[activeIdx].questions = qInput.value;
-            slots[activeIdx].answers = aInput.value;
-            slots[activeIdx].isFilled = true;
-            if (activeIdx < 5) { activeIdx++; updateUI(); } 
-            else { renderGrid(); }
+        ui.next.onclick = () => {
+            dataStore[activeIdx].questions = ui.q.value;
+            dataStore[activeIdx].answers = ui.a.value;
+            dataStore[activeIdx].filled = true;
+            if (activeIdx < 5) { activeIdx++; refresh(); }
+            else { alert("All slots updated. You can now generate the PDF!"); refresh(); }
         };
 
-        document.getElementById('resetBtn').onclick = () => {
-            if(confirm("Start over? This clears everything.")) {
-                slots.forEach(s => { s.image = null; s.questions = ""; s.answers = ""; s.isFilled = false; });
-                activeIdx = 0; updateUI();
+        document.getElementById('clearBtn').onclick = () => {
+            if(confirm("Wipe all slots?")) {
+                dataStore.forEach(s => { s.image = null; s.questions = ""; s.answers = ""; s.filled = false; });
+                activeIdx = 0; refresh();
             }
         };
 
-        // Standardized PDF Engine
-        async function generatePDF() {
+        // PDF Generation with FIXED ANCHOR POINTS
+        async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner"></div> Creating A4...`;
+            const original = btn.innerHTML;
+            btn.innerHTML = `<div class="spinner"></div> Exporting...`;
 
             const doc = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = 210;
-            const pageHeight = 297;
-            const colW = pageWidth / 2;
-            const rowH = pageHeight / 3;
-            const margin = 10;
+            const pW = 210, pH = 297;
+            const cW = pW / 2, cH = pH / 3;
+            const pad = 12;
 
-            // DRAW GRID LINES
+            // Lines
             doc.setDrawColor(0);
             doc.setLineWidth(0.4);
-            doc.line(colW, 0, colW, pageHeight);
-            doc.line(0, rowH, pageWidth, rowH);
-            doc.line(0, rowH * 2, pageWidth, rowH * 2);
+            doc.line(cW, 0, cW, pH);
+            doc.line(0, cH, pW, cH);
+            doc.line(0, cH * 2, pW, cH * 2);
 
             for (let i = 0; i < 6; i++) {
-                const s = slots[i];
-                const col = i % 2;
-                const row = Math.floor(i / 2);
-                const startX = col * colW;
-                const startY = row * rowH;
+                const s = dataStore[i];
+                const col = i % 2, row = Math.floor(i / 2);
+                const x = col * cW, y = row * cH;
 
-                // --- 1. IMAGE SECTION (Top 45% of cell) ---
+                // 1. IMAGE ZONE (Top: y+10 to y+45)
                 if (s.image) {
-                    const maxW = colW - (margin * 2);
-                    const maxH = rowH * 0.42; 
-                    let finalW = maxW;
-                    let finalH = (s.imgH / s.imgW) * finalW;
-                    if (finalH > maxH) {
-                        finalH = maxH;
-                        finalW = (s.imgW / s.imgH) * finalH;
-                    }
-                    const centerX = startX + (colW - finalW) / 2;
-                    doc.addImage(s.image, 'JPEG', centerX, startY + margin, finalW, finalH, undefined, 'FAST');
+                    const maxW = cW - (pad * 2);
+                    const maxH = 38; // 38mm height limit
+                    let fW = maxW, fH = (s.imgH / s.imgW) * fW;
+                    if (fH > maxH) { fH = maxH; fW = (s.imgW / s.imgH) * fH; }
+                    const centerX = x + (cW - fW) / 2;
+                    doc.addImage(s.image, 'JPEG', centerX, y + 8, fW, fH, undefined, 'FAST');
                 }
 
-                // --- 2. QUESTIONS SECTION (Starts exactly at 52% of cell height) ---
-                const questionStartY = startY + (rowH * 0.52);
+                // 2. QUESTION ZONE (Strictly anchored at y+50)
+                const qY = y + 52; 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
+                doc.setTextColor(0);
                 if (s.questions) {
-                    const qLines = doc.splitTextToSize(s.questions, colW - (margin * 2));
-                    doc.text(qLines, startX + margin, questionStartY);
+                    const lines = doc.splitTextToSize(s.questions, cW - (pad * 2));
+                    doc.text(lines, x + pad, qY);
                 }
 
-                // --- 3. ANSWERS SECTION (Starts exactly at 78% of cell height) ---
-                const answerStartY = startY + (rowH * 0.78);
+                // 3. ANSWER ZONE (Strictly anchored at y+78)
+                const aY = y + 78;
                 if (s.answers) {
-                    const aLines = doc.splitTextToSize(s.answers, colW - (margin * 3));
-                    const boxH = rowH * 0.18; // Fixed box height for consistency
-                    
-                    doc.setFillColor(255, 215, 215); // Pink
-                    doc.rect(startX + margin, answerStartY, colW - (margin * 2), boxH, 'F');
-                    
+                    const lines = doc.splitTextToSize(s.answers, cW - (pad * 3));
+                    const boxH = 15; // Standardized height
+                    doc.setFillColor(255, 215, 215);
+                    doc.rect(x + pad, aY, cW - (pad * 2), boxH, 'F');
                     doc.setFont("helvetica", "bold");
-                    doc.text(aLines, startX + margin + 3, answerStartY + 5);
+                    doc.text(lines, x + pad + 3, aY + 5);
                 }
             }
 
-            doc.save('Medical_Study_Sheet_Standard.pdf');
+            doc.save(`Study_Sheet_${Date.now()}.pdf`);
             btn.disabled = false;
-            btn.innerHTML = originalText;
+            btn.innerHTML = original;
             lucide.createIcons();
         }
 
-        document.getElementById('downloadBtn').onclick = generatePDF;
-        window.onload = updateUI;
+        document.getElementById('downloadBtn').onclick = buildPDF;
+        window.onload = refresh;
     </script>
 </body>
 </html>
