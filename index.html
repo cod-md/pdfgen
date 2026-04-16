@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,21 +17,13 @@
             background-color: #F7F7F5; 
             color: #37352F;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        /* 1. Loading State: Hide preview until scaled */
         #previewScrollArea {
             opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-out;
+            transition: opacity 0.2s ease-in;
         }
         
-        #previewScrollArea.is-ready {
-            opacity: 1;
-            visibility: visible;
-        }
-
         .spinner {
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -46,17 +39,14 @@
         ::-webkit-scrollbar-thumb { background: #E9E9E7; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #D3D3D1; }
         
-        /* 3. Preserving Space: Fixed aspect ratios */
         .a4-wrapper {
             aspect-ratio: 1 / 1.4142;
             width: 100%;
-            max-width: 794px;
             background-color: white;
             box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px;
             position: relative;
             overflow: hidden;
             border-radius: 4px;
-            margin-bottom: 2.5rem;
         }
 
         .a4-page {
@@ -69,7 +59,6 @@
             top: 0;
             left: 0;
             transform-origin: top left;
-            will-change: transform;
         }
         
         .active-cell::after {
@@ -84,6 +73,7 @@
 
         textarea { transition: border-color 0.1s ease; }
         textarea:focus { border-color: #9B9A97 !important; box-shadow: none !important; }
+
         .thumb-scroll::-webkit-scrollbar { height: 4px; }
     </style>
 </head>
@@ -123,6 +113,7 @@
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount"></span>
                     </div>
 
+                    <!-- Styling Toolbar with Grid Selector -->
                     <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-8 gap-y-4">
                         <div class="flex items-center gap-2">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Theme:</span>
@@ -181,7 +172,7 @@
                     <h3 class="text-sm font-bold text-[#9B9A97] mb-0.5 uppercase tracking-widest">Workspace</h3>
                 </div>
                 <div id="previewScrollArea" class="bg-[#EFEFED] p-4 sm:p-8 rounded-lg border border-[#E9E9E7] overflow-y-auto thumb-scroll flex-1 shadow-inner relative">
-                    <div id="gridPreview" class="relative flex flex-col items-center w-full max-w-3xl mx-auto pb-8 z-10"></div>
+                    <div id="gridPreview" class="relative flex flex-col gap-10 items-center w-full max-w-3xl mx-auto pb-8 z-10"></div>
                 </div>
             </div>
         </div>
@@ -218,38 +209,28 @@
             scrollArea: document.getElementById('previewScrollArea')
         };
 
+        // --- Layout Helpers ---
         function getGridLayout(slots) {
             let cols = 1, rows = 1;
-            if (slots === 4) { cols = 2; rows = 2; }
+            if (slots === 1) { cols = 1; rows = 1; }
+            else if (slots === 2) { cols = 1; rows = 2; }
+            else if (slots === 3) { cols = 1; rows = 3; }
+            else if (slots === 4) { cols = 2; rows = 2; }
             else if (slots === 6) { cols = 2; rows = 3; }
             else if (slots === 8) { cols = 2; rows = 4; }
             else if (slots === 9) { cols = 3; rows = 3; }
-            else if (slots > 1) { cols = 1; rows = slots; }
             return { cols, rows };
         }
 
-        // --- 2. Instant Initialization: Moving critical logic to run immediately ---
-        function scalePages() {
-            const wrappers = document.querySelectorAll('.a4-wrapper');
-            if (wrappers.length === 0) return;
-            
-            wrappers.forEach(wrapper => {
-                const scale = wrapper.clientWidth / 794;
-                const page = wrapper.querySelector('.a4-page');
-                if (page) page.style.transform = `scale(${scale})`;
-            });
-            
-            // Show content only after scaling
-            ui.scrollArea.classList.add('is-ready');
-        }
+        // --- Core Logic ---
 
         function saveToStorage() {
             const state = { activeIdx, dataStore, slotsPerPage, activeTheme, activeFont };
-            localStorage.setItem('medical_builder_v3', JSON.stringify(state));
+            localStorage.setItem('medical_builder_data_v2', JSON.stringify(state));
         }
 
         function loadFromStorage() {
-            const saved = localStorage.getItem('medical_builder_v3');
+            const saved = localStorage.getItem('medical_builder_data_v2');
             if (saved) {
                 const state = JSON.parse(saved);
                 activeIdx = state.activeIdx || 0;
@@ -285,13 +266,16 @@
 
         function changeGrid(val) {
             slotsPerPage = parseInt(val);
-            const remainder = dataStore.length % slotsPerPage;
+            // Pad dataStore to match new page size
+            const totalItems = dataStore.length;
+            const remainder = totalItems % slotsPerPage;
             if (remainder !== 0) {
                 const needed = slotsPerPage - remainder;
                 for (let i = 0; i < needed; i++) {
                     dataStore.push({ id: dataStore.length, images: [], questions: "", answers: "" });
                 }
             }
+            // Ensure activeIdx is valid
             if (activeIdx >= dataStore.length) activeIdx = dataStore.length - 1;
             refreshAll();
             scrollToActive();
@@ -310,7 +294,7 @@
 
         function removePage(pIdx) {
             if (dataStore.length <= slotsPerPage) return;
-            if (confirm("Delete this page?")) {
+            if (confirm("Delete this entire page and all its content?")) {
                 dataStore.splice(pIdx * slotsPerPage, slotsPerPage);
                 activeIdx = Math.max(0, activeIdx - slotsPerPage);
                 refreshAll();
@@ -346,11 +330,13 @@
         }
 
         function clearAllData() {
-            if(confirm("Erase all data?")) {
-                localStorage.removeItem('medical_builder_v3');
+            if(confirm("This will permanently erase all data on all pages. Continue?")) {
+                localStorage.removeItem('medical_builder_data_v2');
                 location.reload();
             }
         }
+
+        // --- UI Rendering ---
 
         function initStylingControls() {
             const swatches = document.getElementById('colorSwatches');
@@ -362,15 +348,26 @@
             `).join('');
         }
 
+        function scalePages() {
+            document.querySelectorAll('.a4-wrapper').forEach(wrapper => {
+                const scale = wrapper.clientWidth / 794;
+                const page = wrapper.querySelector('.a4-page');
+                if (page) page.style.transform = `scale(${scale})`;
+            });
+            ui.scrollArea.style.opacity = '1';
+        }
+
         function refreshAll() {
             saveToStorage();
             const item = dataStore[activeIdx];
             if (!item) return;
             
+            // Update Editor Labels
             document.getElementById('pageLabel').textContent = Math.floor(activeIdx / slotsPerPage) + 1;
             document.getElementById('slotLabel').textContent = (activeIdx % slotsPerPage) + 1;
             document.getElementById('totalSlotsCount').textContent = `${dataStore.length / slotsPerPage} Pages / ${dataStore.length} Slots`;
             
+            // Update Editor Styles
             ui.q.style.fontFamily = fonts[activeFont].css;
             ui.a.style.fontFamily = fonts[activeFont].css;
             ui.a.style.backgroundColor = themes[activeTheme].bg;
@@ -378,6 +375,7 @@
             ui.q.value = item.questions;
             ui.a.value = item.answers;
 
+            // Render Thumbnails
             const thumbContainer = document.getElementById('thumbContainer');
             if (item.images.length > 0) {
                 thumbContainer.classList.remove('hidden');
@@ -391,6 +389,7 @@
                 thumbContainer.classList.add('hidden');
             }
 
+            // Render Preview Pages
             const totalPages = Math.ceil(dataStore.length / slotsPerPage);
             let fullHtml = '';
             const { cols, rows } = getGridLayout(slotsPerPage);
@@ -407,6 +406,7 @@
                     let activeClass = globalIdx === activeIdx ? 'active-cell bg-[#FAFAFA]' : 'hover:bg-[#F9F9F8]';
                     let activeIdAttr = globalIdx === activeIdx ? 'id="active-slot-element"' : '';
 
+                    // Grid border logic
                     let border = 'border-color: #E9E9E7; border-style: solid; border-width: 0;';
                     if (cols > 1 && i % cols < cols - 1) border += ' border-right-width: 2px;';
                     if (rows > 1 && i < (slotsPerPage - cols)) border += ' border-bottom-width: 2px;';
@@ -432,21 +432,20 @@
                     `;
                 }
 
-                const delBtn = totalPages > 1 ? `<button onclick="removePage(${p})" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors p-1"><i data-lucide="trash-2" size="14"></i></button>` : '';
+                const delBtn = totalPages > 1 ? `<button onclick="removePage(${p})" class="ml-auto text-rose-400 hover:text-rose-600 transition-colors p-1" title="Delete Page"><i data-lucide="trash-2" size="14"></i></button>` : '';
                 fullHtml += `
                     <div class="w-full flex flex-col items-center">
                         <div class="w-full max-w-[794px] mb-2 flex items-center px-1">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-widest">Page ${p + 1}</span>
                             ${delBtn}
                         </div>
-                        <div class="a4-wrapper"><div class="a4-page" style="${gridStyle}">${pageSlotsHtml}</div></div>
+                        <div class="a4-wrapper"><div class="a4-page" id="page-${p}" style="${gridStyle}">${pageSlotsHtml}</div></div>
                     </div>
                 `;
             }
 
             ui.grid.innerHTML = fullHtml;
-            // Execute scaling immediately
-            scalePages();
+            requestAnimationFrame(scalePages);
             
             const isLast = activeIdx === dataStore.length - 1;
             ui.next.innerHTML = `<span>${isLast ? 'Save & New Page' : 'Save & Next Slot'}</span> <i data-lucide="${isLast ? 'file-plus' : 'arrow-right'}" size="16"></i>`;
@@ -457,23 +456,27 @@
             setTimeout(() => {
                 const el = document.getElementById('active-slot-element');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 50);
+            }, 100);
         }
 
         async function buildPDF() {
             const btn = document.getElementById('downloadBtn');
             btn.disabled = true; const original = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner"></div> <span>Exporting...</span>`;
+            btn.innerHTML = `<div class="spinner"></div> <span>Processing...</span>`;
 
             const doc = new jsPDF('p', 'mm', 'a4');
             const pW = 210, pH = 297, pad = 8;
+            
             const { cols, rows } = getGridLayout(slotsPerPage);
             const cW = pW / cols, cH = pH / rows;
+
             const rgb = themes[activeTheme].rgb, fName = fonts[activeFont].jspdf;
             const totalPages = dataStore.length / slotsPerPage;
 
             for (let p = 0; p < totalPages; p++) {
                 if (p > 0) doc.addPage();
+                
+                // Draw Grid lines
                 doc.setDrawColor(233, 233, 231); doc.setLineWidth(0.3);
                 for(let c=1; c < cols; c++) doc.line(c*cW, 0, c*cW, pH);
                 for(let r=1; r < rows; r++) doc.line(0, r*cH, pW, r*cH);
@@ -481,7 +484,9 @@
                 for (let i = 0; i < slotsPerPage; i++) {
                     const s = dataStore[(p * slotsPerPage) + i];
                     if (!s) continue;
+
                     const x = (i % cols) * cW, y = Math.floor(i / cols) * cH;
+                    
                     let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
                     if (s.answers) {
                         doc.setFont(fName, "bold");
@@ -490,6 +495,7 @@
                         doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
                         doc.setFontSize(10); doc.setTextColor(55, 53, 47); doc.text(aLines, x + pad + 3, aBoxY + 5.5);
                     }
+
                     let qH = 0, qY = aBoxY, qLines = [];
                     if (s.questions) {
                         doc.setFont(fName, "bold");
@@ -497,17 +503,21 @@
                         qH = qLines.length * 4.5; qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
                         doc.setFontSize(10); doc.setTextColor(55, 53, 47); doc.text(qLines, x + pad + 3, qY + 3.5); 
                     }
+
                     if (s.images.length > 0) {
                         let availH = qY - y - pad - 2, availW = cW - (pad * 2);
-                        let imgCols = s.images.length === 1 ? 1 : 2, imgRows = Math.ceil(s.images.length / imgCols);
+                        let imgCols = s.images.length === 1 ? 1 : 2;
+                        let imgRows = Math.ceil(s.images.length / imgCols);
                         let iW = availW / imgCols, iH = availH / imgRows;
+
                         s.images.forEach((src, idx) => {
                             try {
                                 const props = doc.getImageProperties(src);
                                 const ratio = props.height / props.width;
                                 let fW = iW - 2, fH = fW * ratio;
                                 if (fH > iH - 2) { fH = iH - 2; fW = fH / ratio; }
-                                const cx = x + pad + (idx % imgCols) * iW + (iW - fW) / 2, cy = y + pad + Math.floor(idx / imgCols) * iH + (iH - fH) / 2;
+                                const cx = x + pad + (idx % imgCols) * iW + (iW - fW) / 2;
+                                const cy = y + pad + Math.floor(idx / imgCols) * iH + (iH - fH) / 2;
                                 doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
                             } catch(e) {}
                         });
@@ -519,16 +529,11 @@
         }
 
         window.addEventListener('resize', scalePages);
-        
-        // Final safeguard for scaling
-        document.addEventListener('DOMContentLoaded', () => {
+        window.onload = () => {
             loadFromStorage();
             initStylingControls();
             refreshAll();
-        });
-
-        // Use window.onload as a backup for heavy assets
-        window.onload = scalePages;
+        };
     </script>
 </body>
 </html>
