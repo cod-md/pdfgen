@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
         
         body { 
             font-family: 'Noto Kufi Arabic', 'Inter', sans-serif; 
@@ -19,7 +19,7 @@
             min-height: 100vh;
         }
         
-        /* Language specific fonts */
+        /* Language specific default fonts */
         html[lang="en"] body {
             font-family: 'Inter', sans-serif;
         }
@@ -59,7 +59,6 @@
             box-sizing: border-box;
         }
 
-        /* Dynamic origin based on direction */
         html[dir="rtl"] .a4-page-scaled {
             position: absolute;
             top: 0;
@@ -85,7 +84,6 @@
         }
 
         textarea { 
-            font-family: 'Inter', 'Noto Kufi Arabic', sans-serif;
             transition: all 0.1s ease; 
         }
         textarea:focus { border-color: #9B9A97 !important; box-shadow: none !important; }
@@ -107,7 +105,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
-                <!-- Language Toggle -->
+                <!-- زر تبديل اللغة -->
                 <button onclick="toggleLang()" class="flex items-center gap-1.5 px-3 py-1.5 bg-[#F7F7F5] hover:bg-[#E9E9E7] text-[#37352F] rounded text-sm font-bold transition-all border border-[#E9E9E7]">
                     <i data-lucide="globe" size="16"></i>
                     <span id="langToggleText">العربية</span>
@@ -142,6 +140,24 @@
                             </span>
                         </div>
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount">Total: 6 slots</span>
+                    </div>
+
+                    <!-- شريط إعدادات الألوان والخطوط (Styling Bar) -->
+                    <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider" data-i18n="boxColor">Box Color:</span>
+                            <div class="flex gap-2" id="colorSwatches">
+                                <!-- سيتم حقن الألوان عبر الجافاسكربت -->
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider" data-i18n="fontStyle">Font:</span>
+                            <select id="fontSelect" onchange="changeFont(this.value)" class="text-xs border border-[#E9E9E7] rounded px-2 py-1 bg-[#F7F7F5] outline-none text-[#37352F] cursor-pointer font-medium hover:bg-[#E9E9E7] transition-colors">
+                                <option value="sans" data-i18n="fontSans">Modern (Sans)</option>
+                                <option value="serif" data-i18n="fontSerif">Classic (Serif)</option>
+                                <option value="mono" data-i18n="fontMono">Typewriter (Mono)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="p-6 space-y-6">
@@ -179,14 +195,14 @@
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label class="flex items-center gap-1.5 text-xs font-bold text-[#37352F]">
-                                    <span class="text-[#9B9A97]">3.</span> <span data-i18n="answersText">Answers (Pink Box)</span>
+                                    <span class="text-[#9B9A97]">3.</span> <span data-i18n="answersText">Answers (Colored Box)</span>
                                 </label>
                             </div>
-                            <textarea id="aInput" dir="auto" class="w-full h-20 p-3 rounded-md border border-[#F5E6E6] bg-[#FFF9F9] outline-none text-sm text-[#37352F] font-bold resize-none placeholder:text-[#E8C5C5]" placeholder="A) Iron deficiency anemia&#10;B) Microcytic, hypochromic"></textarea>
+                            <textarea id="aInput" dir="auto" class="w-full h-20 p-3 rounded-md border outline-none text-sm text-[#37352F] font-bold resize-none" placeholder="A) Iron deficiency anemia&#10;B) Microcytic, hypochromic"></textarea>
                         </div>
 
                         <button id="nextBtn" class="w-full bg-[#2F3437] hover:bg-[#191919] text-white py-3 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm">
-                            <!-- المحتوى يتم إنشاؤه عبر JS لتحديث الأيقونة بناء على اللغة -->
+                            <!-- يتم إنشاؤه برمجياً -->
                         </button>
                     </div>
                 </div>
@@ -226,6 +242,25 @@
         let dataStore = [];
         let currentLang = 'en';
 
+        // --- إعدادات الألوان والخطوط الجديدة ---
+        const themes = {
+            pink: { bg: '#FBE4E4', border: '#F5E6E6', name: 'Soft Pink' },
+            blue: { bg: '#E4F0FB', border: '#E6EEF5', name: 'Ice Blue' },
+            green: { bg: '#E4FBEA', border: '#E6F5E9', name: 'Mint Green' },
+            yellow: { bg: '#FBF4E4', border: '#F5EFE6', name: 'Warm Yellow' },
+            purple: { bg: '#EBE4FB', border: '#EAE6F5', name: 'Lavender' },
+            gray: { bg: '#F0F0F0', border: '#EAEAEA', name: 'Neutral Gray' }
+        };
+
+        const fonts = {
+            sans: "'Inter', 'Noto Kufi Arabic', sans-serif",
+            serif: "Georgia, 'Noto Naskh Arabic', serif",
+            mono: "'Courier New', Courier, monospace"
+        };
+
+        let activeTheme = 'pink';
+        let activeFont = 'sans';
+
         const i18n = {
             ar: {
                 title: "منشئ الملخصات الطبية",
@@ -240,7 +275,7 @@
                 addMore: "إضافة المزيد من الصور",
                 questionsText: "نص الأسئلة",
                 questionsPlaceholder: "A) What is the diagnosis?\nب) صف الأعراض الظاهرة في الصورة.",
-                answersText: "الأجوبة (المربع الوردي)",
+                answersText: "الأجوبة (المربع الملون)",
                 answersPlaceholder: "A) Iron deficiency anemia\nب) فقر الدم بسبب نقص الحديد",
                 saveNext: "حفظ وتعديل الخانة التالية",
                 saveNewPage: "حفظ وإضافة صفحة جديدة",
@@ -250,7 +285,12 @@
                 confirmClear: "هل أنت متأكد من رغبتك في مسح كافة البيانات والعودة لصفحة واحدة فارغة؟",
                 exporting: "جاري التصدير...",
                 exportError: "حدث خطأ أثناء التصدير. يرجى المحاولة مرة أخرى.",
-                slotWord: "خانة"
+                slotWord: "خانة",
+                boxColor: "لون المربع:",
+                fontStyle: "الخط:",
+                fontSans: "حديث (Sans)",
+                fontSerif: "كلاسيكي (Serif)",
+                fontMono: "آلة كاتبة (Mono)"
             },
             en: {
                 title: "Medical Summary Builder",
@@ -265,7 +305,7 @@
                 addMore: "Add more images",
                 questionsText: "Questions Text",
                 questionsPlaceholder: "A) What is the diagnosis?\nB) Describe the findings.",
-                answersText: "Answers (Pink Box)",
+                answersText: "Answers (Colored Box)",
                 answersPlaceholder: "A) Iron deficiency anemia\nB) Microcytic, hypochromic",
                 saveNext: "Save & Edit Next Slot",
                 saveNewPage: "Save & Add New Page",
@@ -275,7 +315,12 @@
                 confirmClear: "Are you sure you want to clear all data and reset to a single empty page?",
                 exporting: "Exporting...",
                 exportError: "An error occurred during export. Please try again.",
-                slotWord: "Slot"
+                slotWord: "Slot",
+                boxColor: "Box Color:",
+                fontStyle: "Font:",
+                fontSans: "Modern (Sans)",
+                fontSerif: "Classic (Serif)",
+                fontMono: "Typewriter (Mono)"
             }
         };
 
@@ -295,7 +340,28 @@
 
         const dummyDoc = new jsPDF('p', 'mm', 'a4');
 
-        // Language Toggle Logic
+        function initStylingControls() {
+            const swatches = document.getElementById('colorSwatches');
+            swatches.innerHTML = Object.keys(themes).map(key => `
+                <button onclick="changeTheme('${key}')" 
+                    class="w-5 h-5 rounded-full transition-all focus:outline-none ${activeTheme === key ? 'ring-2 ring-[#37352F] ring-offset-1 scale-110' : 'hover:scale-110'}" 
+                    style="background-color: ${themes[key].bg}; border: 1px solid ${themes[key].border};" 
+                    title="${themes[key].name}">
+                </button>
+            `).join('');
+        }
+
+        function changeTheme(key) {
+            activeTheme = key;
+            initStylingControls();
+            refresh();
+        }
+
+        function changeFont(key) {
+            activeFont = key;
+            refresh();
+        }
+
         function toggleLang() {
             currentLang = currentLang === 'ar' ? 'en' : 'ar';
             document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
@@ -316,6 +382,8 @@
             refresh();
         }
 
+        // Initialize App
+        initStylingControls();
         addNewPage(false);
 
         function addNewPage(shouldRefresh = true) {
@@ -357,6 +425,12 @@
             ui.slotLabel.textContent = currentSlotOnPage;
             ui.totalCount.textContent = `${i18n[currentLang].totalSlots} ${dataStore.length}`;
             
+            // تطبيق الخطوط والألوان المحددة على حقول الإدخال لتتناسق مع العرض الحي
+            ui.q.style.fontFamily = fonts[activeFont];
+            ui.a.style.fontFamily = fonts[activeFont];
+            ui.a.style.backgroundColor = themes[activeTheme].bg;
+            ui.a.style.borderColor = themes[activeTheme].border;
+
             ui.q.value = item.questions;
             ui.a.value = item.answers;
             
@@ -420,9 +494,9 @@
                     pageSlotsHtml += `
                         <div ${activeIdAttr} onclick="goto(${globalIdx})" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="${borderStyle} padding: 28px; box-sizing: border-box;">
                             ${imgHtml}
-                            <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%; flex-shrink: 0; font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;">
-                                ${s.questions ? `<div dir="auto" style="font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word; text-align: start;">${qHtml}</div>` : ''}
-                                ${s.answers ? `<div dir="auto" style="background-color: #FBE4E4; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word; text-align: start;">${aHtml}</div>` : ''}
+                            <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%; flex-shrink: 0;">
+                                ${s.questions ? `<div dir="auto" style="font-family: ${fonts[activeFont]}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 0 12px; margin-bottom: 8px; word-wrap: break-word; text-align: start;">${qHtml}</div>` : ''}
+                                ${s.answers ? `<div dir="auto" style="font-family: ${fonts[activeFont]}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: 14px; line-height: 1.5; white-space: pre-wrap; padding: 12px; border-radius: 4px; word-wrap: break-word; text-align: start;">${aHtml}</div>` : ''}
                             </div>
                         </div>
                     `;
@@ -581,3 +655,5 @@
     </script>
 </body>
 </html>
+
+
