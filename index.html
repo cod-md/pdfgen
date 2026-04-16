@@ -11,19 +11,24 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
-        /* Pre-load state to prevent "shape changing" or flashing */
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #F7F7F5; 
             color: #37352F;
             min-height: 100vh;
-            margin: 0;
-            opacity: 0; /* Keep everything hidden until JS calculates the scale */
-            transition: opacity 0.2s ease-in;
+            overflow-x: hidden;
         }
 
-        body.app-ready {
+        /* 1. Loading State: Hide preview until scaled */
+        #previewScrollArea {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out;
+        }
+        
+        #previewScrollArea.is-ready {
             opacity: 1;
+            visibility: visible;
         }
 
         .spinner {
@@ -41,10 +46,11 @@
         ::-webkit-scrollbar-thumb { background: #E9E9E7; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #D3D3D1; }
         
+        /* 3. Preserving Space: Fixed aspect ratios */
         .a4-wrapper {
             aspect-ratio: 1 / 1.4142;
             width: 100%;
-            max-width: 794px; /* Locked width to prevent jump */
+            max-width: 794px;
             background-color: white;
             box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px;
             position: relative;
@@ -63,8 +69,7 @@
             top: 0;
             left: 0;
             transform-origin: top left;
-            /* Using CSS variable for smoother JS updates */
-            transform: scale(var(--page-scale, 1));
+            will-change: transform;
         }
         
         .active-cell::after {
@@ -84,7 +89,7 @@
 </head>
 <body class="p-4 md:p-6 lg:p-8">
 
-    <div id="main-app" class="max-w-[1300px] mx-auto">
+    <div class="max-w-[1300px] mx-auto">
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 bg-white p-4 md:px-6 rounded-lg border border-[#E9E9E7] shadow-sm">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded bg-[#F7F7F5] border border-[#E9E9E7] flex items-center justify-center shrink-0">
@@ -223,26 +228,28 @@
             return { cols, rows };
         }
 
+        // --- 2. Instant Initialization: Moving critical logic to run immediately ---
         function scalePages() {
             const wrappers = document.querySelectorAll('.a4-wrapper');
             if (wrappers.length === 0) return;
             
             wrappers.forEach(wrapper => {
                 const scale = wrapper.clientWidth / 794;
-                wrapper.style.setProperty('--page-scale', scale);
+                const page = wrapper.querySelector('.a4-page');
+                if (page) page.style.transform = `scale(${scale})`;
             });
             
-            // Critical: Only show the app once scaling is applied
-            document.body.classList.add('app-ready');
+            // Show content only after scaling
+            ui.scrollArea.classList.add('is-ready');
         }
 
         function saveToStorage() {
             const state = { activeIdx, dataStore, slotsPerPage, activeTheme, activeFont };
-            localStorage.setItem('medical_builder_v4', JSON.stringify(state));
+            localStorage.setItem('medical_builder_v3', JSON.stringify(state));
         }
 
         function loadFromStorage() {
-            const saved = localStorage.getItem('medical_builder_v4');
+            const saved = localStorage.getItem('medical_builder_v3');
             if (saved) {
                 const state = JSON.parse(saved);
                 activeIdx = state.activeIdx || 0;
@@ -340,7 +347,7 @@
 
         function clearAllData() {
             if(confirm("Erase all data?")) {
-                localStorage.removeItem('medical_builder_v4');
+                localStorage.removeItem('medical_builder_v3');
                 location.reload();
             }
         }
@@ -438,6 +445,7 @@
             }
 
             ui.grid.innerHTML = fullHtml;
+            // Execute scaling immediately
             scalePages();
             
             const isLast = activeIdx === dataStore.length - 1;
@@ -449,7 +457,7 @@
             setTimeout(() => {
                 const el = document.getElementById('active-slot-element');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 30);
+            }, 50);
         }
 
         async function buildPDF() {
@@ -512,13 +520,15 @@
 
         window.addEventListener('resize', scalePages);
         
-        // Immediate launch: Execute logic as soon as DOM is ready
-        (function init() {
+        // Final safeguard for scaling
+        document.addEventListener('DOMContentLoaded', () => {
             loadFromStorage();
             initStylingControls();
             refreshAll();
-        })();
+        });
+
+        // Use window.onload as a backup for heavy assets
+        window.onload = scalePages;
     </script>
 </body>
 </html>
-
