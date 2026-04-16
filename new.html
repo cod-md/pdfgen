@@ -227,7 +227,7 @@
         let activeTheme = 'pink';
         let activeFont = 'sans';
         let activeFontSize = 10;
-        let activeImgSize = 75; // Represents scale width percentage (50, 75, 100)
+        let activeImgSize = 75; 
         let isAutoFit = false;
 
         const themes = {
@@ -277,7 +277,6 @@
             return { cols, rows };
         }
 
-        // --- NEW INDEPENDENT COLUMNS ALGORITHM (MASONRY) ---
         function calculateIndependentLayout() {
             const pages = [];
             let currentPageSlots = [];
@@ -300,7 +299,6 @@
                 let reqH = pad * 2; 
                 let hasContent = false;
 
-                // 1. Calculate height of images dynamically based on Scale
                 if (s.images.length > 0) {
                     let imgCols = s.images.length === 1 ? 1 : 2;
                     let scaleW = activeImgSize / 100;
@@ -308,7 +306,7 @@
                     let gap = 3;
                     let iW = (availW - (imgCols - 1) * gap) / imgCols;
                     let maxImgH = 0;
-                    let limitH = 150 * scaleW; // Proportionally scale max height boundary
+                    let limitH = 150 * scaleW;
 
                     s.images.forEach(src => {
                         try {
@@ -325,22 +323,18 @@
                     hasContent = true;
                 }
 
-                // 2. Exact 1 Line Gap between Image and Text
                 if (hasContent && (s.questions || s.answers)) {
                     reqH += activeFontSize * 0.35; 
                 }
 
-                // 3. Questions
                 if (s.questions) {
                     let qLines = dummyDoc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
                     reqH += (qLines.length * activeFontSize * 0.45); 
                     hasContent = true;
                 }
 
-                // Small gap between Q and A
                 if (s.questions && s.answers) reqH += activeFontSize * 0.2;
 
-                // 4. Answers
                 if (s.answers) {
                     let aLines = dummyDoc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
                     reqH += (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6); 
@@ -501,7 +495,6 @@
             const { cols, rows } = getGridLayout(slotsPerPage);
             
             if (isAutoFit) {
-                // --- RENDER MASONRY AUTO-FIT HTML ---
                 const pages = calculateIndependentLayout();
                 
                 pages.forEach((pageSlots, p) => {
@@ -524,10 +517,10 @@
                         let imgHtml = '';
                         if (s.images.length > 0) {
                             let iCols = s.images.length === 1 ? 1 : 2;
-                            let gapMargin = activeFontSize * 1.4; 
+                            let gapMargin = activeFontSize * 0.35; // visually glued
                             let limitPx = 300 * (activeImgSize / 100);
                             imgHtml = `<div style="width: ${activeImgSize}%; margin: 0 auto ${gapMargin}px auto; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px;">`;
-                            s.images.forEach(img => imgHtml += `<div style="width: 100%; display: flex; justify-content: center;"><img src="${img}" style="max-width: 100%; max-height: ${limitPx}px; object-fit: contain;" /></div>`);
+                            s.images.forEach(img => imgHtml += `<div style="width: 100%; display: flex; justify-content: center;"><img src="${img}" style="max-width: 100%; max-height: ${limitPx}px; object-fit: contain; display: block;" /></div>`);
                             imgHtml += `</div>`;
                         } else {
                             imgHtml = `<div style="width: 100%; display: flex; justify-content: center; margin-bottom: 12px;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
@@ -556,7 +549,6 @@
                 });
                 
             } else {
-                // --- RENDER STRICT GRID HTML ---
                 const totalPages = Math.ceil(dataStore.length / slotsPerPage);
 
                 for (let p = 0; p < totalPages; p++) {
@@ -578,22 +570,29 @@
                         let imgHtml = '';
                         if (s.images.length > 0) {
                             let iCols = s.images.length === 1 ? 1 : 2;
-                            let maxH = activeImgSize * 0.45; // 50 -> 22.5%, 75 -> 33.7%, 100 -> 45%
-                            imgHtml = `<div style="flex: 1; max-height: ${maxH}%; width: ${activeImgSize}%; margin: 0 auto 12px auto; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; min-height: 0;">`;
-                            s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain;" /></div>`);
+                            let maxH = activeImgSize * 0.45; 
+                            
+                            // 1. Removed margin-bottom & flex: 1. Glued structurally to the bottom elements.
+                            imgHtml = `<div style="max-height: ${maxH}%; width: ${activeImgSize}%; margin: 0 auto; display: grid; grid-template-columns: repeat(${iCols}, minmax(0, 1fr)); gap: 10px; min-height: 0;">`;
+                            // 2. Added display: block to img
+                            s.images.forEach(img => imgHtml += `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${img}" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" /></div>`);
                             imgHtml += `</div>`;
                         } else {
-                            imgHtml = `<div style="flex: 1; display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
+                            imgHtml = `<div style="display: flex; align-items: center; justify-content: center;"><span style="color: #D3D3D1; font-size: 10px; font-weight: bold; text-transform: uppercase;">Slot ${globalIdx+1}</span></div>`;
                         }
 
                         const fsPx = activeFontSize * 1.4;
+                        let gapHtml = (s.images.length > 0 && (s.questions || s.answers)) ? `<div style="height: ${fsPx * 0.35}px;"></div>` : '';
 
                         pageSlotsHtml += `
-                            <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col cursor-pointer overflow-hidden ${activeClass}" style="width: 100%; ${border} padding: 24px; box-sizing: border-box;">
-                                ${imgHtml}
-                                <div style="margin-top: auto; display: flex; flex-direction: column; width: 100%;">
-                                    ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: 8px; word-break: break-word;">${escapeHtml(s.questions)}</div>` : ''}
-                                    ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px; word-break: break-word;">${escapeHtml(s.answers)}</div>` : ''}
+                            <div ${activeIdAttr} onclick="activeIdx=${globalIdx}; refreshAll();" class="relative flex flex-col justify-center cursor-pointer overflow-hidden ${activeClass}" style="width: 100%; ${border} padding: 24px; box-sizing: border-box;">
+                                <div style="display: flex; flex-direction: column; width: 100%;">
+                                    ${imgHtml}
+                                    ${gapHtml}
+                                    <div style="display: flex; flex-direction: column; width: 100%;">
+                                        ${s.questions ? `<div style="font-family: ${fonts[activeFont].css}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 0 4px; margin-bottom: ${s.answers ? '8px' : '0'}; word-break: break-word;">${escapeHtml(s.questions)}</div>` : ''}
+                                        ${s.answers ? `<div style="font-family: ${fonts[activeFont].css}; background-color: ${themes[activeTheme].bg}; font-weight: bold; color: #37352F; font-size: ${fsPx}px; line-height: 1.4; white-space: pre-wrap; padding: 10px; border-radius: 4px; word-break: break-word;">${escapeHtml(s.answers)}</div>` : ''}
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -639,7 +638,6 @@
                 const rgb = themes[activeTheme].rgb, fName = fonts[activeFont].jspdf;
 
                 if (isAutoFit) {
-                    // PDF RENDER: MASONRY AUTO FIT
                     const pages = calculateIndependentLayout();
                     const cW = pW / cols;
                     
@@ -722,7 +720,6 @@
                         });
                     });
                 } else {
-                    // PDF RENDER: STRICT GRID
                     const cW = pW / cols, cH = pH / rows;
                     const totalPages = Math.ceil(dataStore.length / slotsPerPage);
 
@@ -740,57 +737,104 @@
                             const x = (i % cols) * cW, y = Math.floor(i / cols) * cH;
                             
                             if (!s) continue;
-                            let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
-                            if (s.answers) {
-                                doc.setFont(fName, "bold");
-                                doc.setFontSize(activeFontSize);
-                                aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6); 
-                                aBoxH = (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6); 
-                                aBoxY = y + cH - pad - aBoxH; 
-                                doc.setFillColor(rgb[0], rgb[1], rgb[2]); 
-                                doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
-                                doc.setTextColor(55, 53, 47); 
-                                doc.text(aLines, x + pad + 3, aBoxY + (activeFontSize * 0.55));
-                            }
-
-                            let qH = 0, qY = aBoxY, qLines = [];
-                            if (s.questions) {
-                                doc.setFont(fName, "bold");
-                                doc.setFontSize(activeFontSize); 
-                                qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
-                                qH = qLines.length * activeFontSize * 0.45; 
-                                qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
-                                doc.setTextColor(55, 53, 47); 
-                                doc.text(qLines, x + pad + 3, qY + (activeFontSize * 0.35)); 
-                            }
-
+                            
+                            // CALCULATE TOTAL COMBINED BLOCK HEIGHT
+                            let blockH = 0;
+                            let scaleW = activeImgSize / 100;
+                            let limitH = 150 * scaleW;
+                            
+                            // 1. Image Block Height
+                            let imgRows = 0, iW = 0, iH = 0, maxImgH = 0;
+                            let gap = 3;
+                            let imgCols = s.images.length === 1 ? 1 : 2;
+                            
                             if (s.images.length > 0) {
-                                let totalAvailH = qY - y - pad - 2;
-                                let scaleW = activeImgSize / 100;
-                                let limitH = 150 * scaleW;
-                                let imgBlockH = Math.min(totalAvailH, limitH);
-                                let yOffset = Math.max(0, (totalAvailH - imgBlockH) / 2); 
+                                let availW = (cW - (pad * 2)) * scaleW;
+                                iW = (availW - (imgCols - 1)*gap) / imgCols;
                                 
+                                s.images.forEach(src => {
+                                    try {
+                                        const props = doc.getImageProperties(src);
+                                        const ratio = props.height / props.width;
+                                        let fH = iW * ratio;
+                                        if (fH > limitH) fH = limitH;
+                                        if (fH > maxImgH) maxImgH = fH;
+                                    } catch(e) {}
+                                });
+                                imgRows = Math.ceil(s.images.length / imgCols);
+                                blockH += (maxImgH * imgRows) + (imgRows - 1)*gap;
+                            }
+                            
+                            // 2. Text Heights & Spacing
+                            let qLines = [], aLines = [], qH = 0, aBoxH = 0;
+                            
+                            if (s.images.length > 0 && (s.questions || s.answers)) {
+                                 blockH += activeFontSize * 0.35; // visually glued spacing
+                            }
+                            
+                            doc.setFont(fName, "bold");
+                            doc.setFontSize(activeFontSize);
+                            
+                            if (s.questions) {
+                                qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
+                                qH = qLines.length * activeFontSize * 0.45;
+                                blockH += qH;
+                            }
+                            
+                            if (s.questions && s.answers) {
+                                blockH += activeFontSize * 0.2;
+                            }
+                            
+                            if (s.answers) {
+                                aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6);
+                                aBoxH = (aLines.length * activeFontSize * 0.5) + (activeFontSize * 0.6);
+                                blockH += aBoxH;
+                            }
+                            
+                            // 3. Perfect vertical centering of the entire group
+                            let startY = y + (cH - blockH) / 2;
+                            if (startY < y + pad) startY = y + pad; 
+                            
+                            let currentY = startY;
+                            
+                            // 4. Render Grouped Elements top to bottom
+                            if (s.images.length > 0) {
                                 let availW = (cW - (pad * 2)) * scaleW;
                                 let xOffset = Math.max(0, (cW - (pad * 2) - availW) / 2);
-
-                                let imgCols = s.images.length === 1 ? 1 : 2;
-                                let imgRows = Math.ceil(s.images.length / imgCols);
-                                let gap = 3;
-                                let iW = (availW - (imgCols - 1)*gap) / imgCols;
-                                let iH = (imgBlockH - (imgRows - 1)*gap) / imgRows;
-
+                                
                                 s.images.forEach((src, idx) => {
                                     try {
                                         const props = doc.getImageProperties(src);
                                         const ratio = props.height / props.width;
                                         let fW = iW, fH = fW * ratio;
-                                        if (fH > iH) { fH = iH; fW = fH / ratio; }
+                                        if (fH > maxImgH) { fH = maxImgH; fW = fH / ratio; }
                                         const cx = x + pad + xOffset + (idx % imgCols) * (iW + gap) + (iW - fW) / 2;
-                                        const cy = y + pad + yOffset + Math.floor(idx / imgCols) * (iH + gap) + (iH - fH) / 2;
+                                        const cy = currentY + Math.floor(idx / imgCols) * (maxImgH + gap) + (maxImgH - fH) / 2;
                                         doc.addImage(src, 'JPEG', cx, cy, fW, fH, undefined, 'FAST');
                                     } catch(e) {}
                                 });
+                                currentY += (maxImgH * imgRows) + (imgRows - 1)*gap;
+                            }
+                            
+                            if (s.images.length > 0 && (s.questions || s.answers)) {
+                                currentY += activeFontSize * 0.35;
+                            }
+                            
+                            if (s.questions) {
+                                doc.setTextColor(55, 53, 47);
+                                doc.text(qLines, x + pad + 3, currentY + (activeFontSize * 0.35));
+                                currentY += qH;
+                            }
+                            
+                            if (s.questions && s.answers) {
+                                currentY += activeFontSize * 0.2;
+                            }
+                            
+                            if (s.answers) {
+                                doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+                                doc.rect(x + pad, currentY, cW - (pad * 2), aBoxH, 'F');
+                                doc.setTextColor(55, 53, 47);
+                                doc.text(aLines, x + pad + 3, currentY + (activeFontSize * 0.55));
                             }
                         }
                     }
@@ -818,6 +862,4 @@
     </script>
 </body>
 </html>
-
-
 
