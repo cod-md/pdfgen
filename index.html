@@ -1,4 +1,4 @@
-```html
+div ```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,6 +36,7 @@
             grid-template-columns: 1fr 1fr;
             grid-template-rows: repeat(3, 1fr);
             border: 1px solid #000;
+            container-type: inline-size; /* Enables absolute mm-accurate scaling */
         }
         
         /* Active Compartment Outline */
@@ -153,6 +154,9 @@
         const { jsPDF } = window.jspdf;
         let activeIdx = 0;
         
+        // Dummy doc to calculate EXACT pdf text wrapping for the live preview
+        const dummyDoc = new jsPDF('p', 'mm', 'a4');
+        
         let dataStore = Array.from({ length: 6 }, (_, i) => ({
             id: i, images: [], questions: "", answers: "", filled: false
         }));
@@ -168,6 +172,21 @@
             label: document.getElementById('slotLabel'),
             dots: document.getElementById('navDots')
         };
+
+        // Forces HTML to break lines at the exact same characters as the PDF
+        function getPdfLinesHtml(text, maxWidthMM) {
+            if (!text) return '';
+            dummyDoc.setFont("helvetica", "bold");
+            dummyDoc.setFontSize(10);
+            const lines = dummyDoc.splitTextToSize(text, maxWidthMM);
+            return lines.map(line => {
+                const safeLine = line
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+                return `<div>${safeLine || '&nbsp;'}</div>`; // Preserves empty lines
+            }).join('');
+        }
 
         function refresh() {
             const item = dataStore[activeIdx];
@@ -202,6 +221,10 @@
                 <div class="w-1.5 h-1.5 rounded-full ${i === activeIdx ? 'bg-blue-400 w-4' : (s.filled ? 'bg-slate-400' : 'bg-slate-700')} transition-all"></div>
             `).join('');
 
+            // Exact millimeter metrics mapped to % of A4 width
+            const qMaxWidthMM = (210 / 2) - 16;
+            const aMaxWidthMM = (210 / 2) - 24;
+
             // --- RENDER LIVE A4 PREVIEW ---
             ui.grid.innerHTML = dataStore.map((s, i) => {
                 // Determine PDF-matching Borders
@@ -215,26 +238,30 @@
                 let imgHtml = '';
                 if (s.images.length > 0) {
                     let cols = s.images.length === 1 ? 1 : 2;
-                    imgHtml = `<div class="flex-1 w-full grid gap-1 min-h-0 mb-2" style="grid-template-columns: repeat(${cols}, minmax(0, 1fr));">`;
+                    imgHtml = `<div class="flex-1 w-full grid min-h-0" style="grid-template-columns: repeat(${cols}, minmax(0, 1fr)); gap: 1.4cqw; margin-bottom: 0.9cqw;">`;
                     s.images.forEach(img => {
                         imgHtml += `<div class="w-full h-full flex items-center justify-center overflow-hidden"><img src="${img}" class="max-w-full max-h-full object-contain" /></div>`;
                     });
                     imgHtml += `</div>`;
                 } else {
-                    imgHtml = `<div class="flex-1 w-full flex items-center justify-center min-h-0 mb-2"><span class="text-[10px] text-slate-300 font-bold tracking-widest">SLOT ${i+1}</span></div>`;
+                    imgHtml = `<div class="flex-1 w-full flex items-center justify-center min-h-0"><span class="text-[10px] text-slate-300 font-bold tracking-widest">SLOT ${i+1}</span></div>`;
                 }
+
+                // Process text wrapping using the PDF engine logic
+                const qHtml = s.questions ? getPdfLinesHtml(s.questions, qMaxWidthMM) : '';
+                const aHtml = s.answers ? getPdfLinesHtml(s.answers, aMaxWidthMM) : '';
 
                 // Compile HTML Cell (Flex column, text pushed to bottom via mt-auto)
                 return `
-                    <div onclick="goto(${i})" class="relative flex flex-col p-[4%] cursor-pointer overflow-hidden ${borderClass} ${activeClass}">
+                    <div onclick="goto(${i})" class="relative flex flex-col cursor-pointer overflow-hidden ${borderClass} ${activeClass}" style="padding: 3.8cqw;">
                         
                         <!-- Top Area: Auto-expanding Images -->
                         ${imgHtml}
 
-                        <!-- Bottom Area: Grouped Text (Pushed to bottom) -->
-                        <div class="mt-auto flex flex-col gap-1 w-full shrink-0">
-                            ${s.questions ? `<div class="text-[9px] sm:text-[11px] font-bold text-black leading-snug whitespace-pre-wrap">${s.questions}</div>` : ''}
-                            ${s.answers ? `<div class="bg-[#ffd7d7] text-[9px] sm:text-[11px] font-bold text-black p-1.5 whitespace-pre-wrap shrink-0 mt-0.5">${s.answers}</div>` : ''}
+                        <!-- Bottom Area: Grouped Text (Pushed to bottom) with mm-accurate scaling -->
+                        <div class="mt-auto flex flex-col w-full shrink-0" style="font-family: Helvetica, Arial, sans-serif;">
+                            ${s.questions ? `<div class="font-bold text-black" style="font-size: 1.68cqw; line-height: 1.28; white-space: nowrap;">${qHtml}</div>` : ''}
+                            ${s.answers ? `<div class="bg-[#ffd7d7] font-bold text-black" style="font-size: 1.68cqw; line-height: 1.42; white-space: nowrap; padding: 1.4cqw; margin-top: 1.4cqw;">${aHtml}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -393,6 +420,7 @@
     </script>
 </body>
 </html>
+
 
 
 ```
