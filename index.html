@@ -9,13 +9,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kite+One&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #F7F7F5; 
             color: #37352F;
             min-height: 100vh;
+        }
+
+        /* Prevent layout jump: Start hidden, fade in once scaled */
+        #previewScrollArea {
+            opacity: 0;
+            transition: opacity 0.2s ease-in;
         }
         
         .spinner {
@@ -44,16 +50,13 @@
         }
 
         .a4-page {
-            width: 794px;
-            height: 1123px;
+            width: 794px; /* Fixed native A4 width */
+            height: 1123px; /* Fixed native A4 height */
             background-color: white;
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: repeat(3, 1fr);
             box-sizing: border-box;
-        }
-
-        .a4-page-scaled {
             position: absolute;
             top: 0;
             left: 0;
@@ -71,7 +74,7 @@
         }
 
         textarea { 
-            transition: border-color 0.1s ease, background-color 0.1s ease; 
+            transition: border-color 0.1s ease; 
         }
         textarea:focus { border-color: #9B9A97 !important; box-shadow: none !important; }
     </style>
@@ -109,7 +112,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Editor Section -->
+            <!-- Editor -->
             <div class="lg:col-span-5 flex flex-col gap-6">
                 <div class="bg-white rounded-lg shadow-sm border border-[#E9E9E7] overflow-hidden sticky top-8 flex flex-col">
                     
@@ -122,7 +125,7 @@
                         <span class="text-xs text-[#9B9A97] font-medium" id="totalSlotsCount">Total: 6 slots</span>
                     </div>
 
-                    <!-- Styling Controls -->
+                    <!-- Toolbar with gap fix -->
                     <div class="bg-white px-5 py-3 border-b border-[#E9E9E7] flex flex-wrap items-center gap-x-10 gap-y-4">
                         <div class="flex items-center gap-3">
                             <span class="text-[10px] font-bold text-[#9B9A97] uppercase tracking-wider">Box Color:</span>
@@ -144,7 +147,6 @@
                     </div>
 
                     <div class="p-6 space-y-6">
-                        <!-- Image Upload -->
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label class="flex items-center gap-1.5 text-xs font-bold text-[#37352F]">
@@ -161,14 +163,13 @@
                             </div>
                         </div>
 
-                        <!-- Text Inputs -->
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label class="flex items-center gap-1.5 text-xs font-bold text-[#37352F]">
                                     <span class="text-[#9B9A97]">2.</span> <span>Questions Text</span>
                                 </label>
                             </div>
-                            <textarea id="qInput" class="w-full h-20 p-3 rounded-md border border-[#E9E9E7] bg-[#F7F7F5] outline-none text-sm font-semibold resize-none text-[#37352F] placeholder:text-[#D3D3D1]" placeholder="A) What is the diagnosis?&#10;B) Describe the findings."></textarea>
+                            <textarea id="qInput" class="w-full h-20 p-3 rounded-md border border-[#E9E9E7] bg-[#F7F7F5] outline-none text-sm font-semibold resize-none text-[#37352F] placeholder:text-slate-300" placeholder="A) What is the diagnosis?&#10;B) Describe the findings."></textarea>
                         </div>
 
                         <div>
@@ -185,7 +186,7 @@
                 </div>
             </div>
 
-            <!-- Preview Section -->
+            <!-- Preview -->
             <div class="lg:col-span-7 flex flex-col h-[calc(100vh-6rem)]">
                 <div class="flex justify-between items-end mb-3 shrink-0 px-1">
                     <h3 class="text-sm font-bold text-[#37352F] mb-0.5">Workspace Preview</h3>
@@ -196,10 +197,9 @@
             </div>
         </div>
 
-        <!-- Footer -->
         <footer class="mt-8 pt-5 border-t border-[#E9E9E7] text-center">
             <p class="text-sm text-[#9B9A97] font-medium">
-                Added by Muhammad Saadoon | <a href="https://t.me/anemd" target="_blank" class="text-[#37352F] hover:text-[#0088cc] font-bold transition-colors inline-flex items-center gap-1">@anemd</a>
+                Added by Muhammad Saadoon | <a href="https://t.me/anemd" target="_blank" class="text-[#37352F] hover:text-[#0088cc] font-bold transition-colors">@anemd</a>
             </p>
         </footer>
     </div>
@@ -241,7 +241,6 @@
             scrollArea: document.getElementById('previewScrollArea')
         };
 
-        // Cache text values in real-time WITHOUT refreshing the whole preview
         ui.q.oninput = () => { dataStore[activeIdx].questions = ui.q.value; };
         ui.a.oninput = () => { dataStore[activeIdx].answers = ui.a.value; };
 
@@ -284,14 +283,15 @@
         }
 
         function scalePages() {
-            document.querySelectorAll('.a4-wrapper').forEach(wrapper => {
+            const wrappers = document.querySelectorAll('.a4-wrapper');
+            wrappers.forEach(wrapper => {
                 const scale = wrapper.clientWidth / 794;
                 const page = wrapper.querySelector('.a4-page');
                 if (page) page.style.transform = `scale(${scale})`;
             });
+            // Show preview only after scaling is complete
+            ui.scrollArea.style.opacity = '1';
         }
-        
-        window.addEventListener('resize', scalePages);
 
         function refreshEditor() {
             const item = dataStore[activeIdx];
@@ -366,11 +366,12 @@
                         </div>
                     `;
                 }
-                fullHtml += `<div class="w-full flex flex-col items-center group relative"><div class="a4-wrapper"><div class="a4-page a4-page-scaled" id="page-${p}">${pageSlotsHtml}</div></div></div>`;
+                fullHtml += `<div class="w-full flex flex-col items-center group relative"><div class="a4-wrapper"><div class="a4-page" id="page-${p}">${pageSlotsHtml}</div></div></div>`;
             }
 
             ui.grid.innerHTML = fullHtml;
-            scalePages(); 
+            // Important: Use requestAnimationFrame to ensure the DOM has updated before scaling
+            requestAnimationFrame(scalePages);
             lucide.createIcons();
         }
 
@@ -465,15 +466,16 @@
         }
         document.getElementById('downloadBtn').onclick = buildPDF;
 
-        // --- Initialize App On Load ---
-        window.onload = function() {
+        // Final Scale adjustment
+        window.addEventListener('resize', scalePages);
+
+        // Immediate logic trigger
+        (function init() {
             initStylingControls();
-            addNewPage(false); // Create initial slot structure
-            refreshEditor();   // Render editor fields
-            refreshPreview();  // Render workspace preview
-            lucide.createIcons(); // Initialize all icons
-        };
+            addNewPage(false);
+            refreshEditor();
+            refreshPreview();
+        })();
     </script>
 </body>
 </html>
-
