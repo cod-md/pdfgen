@@ -224,6 +224,7 @@
         function saveText() {
             dataStore[activeIdx].questions = ui.q.value;
             dataStore[activeIdx].answers = ui.a.value;
+            refreshAll(); // Auto update preview while typing
         }
 
         function changeTheme(key) {
@@ -331,8 +332,9 @@
             ui.a.style.backgroundColor = themes[activeTheme].bg;
             ui.a.style.borderColor = themes[activeTheme].border;
 
-            ui.q.value = item.questions;
-            ui.a.value = item.answers;
+            // Only update text values if they don't match (prevents cursor jumping while typing)
+            if (ui.q.value !== item.questions) ui.q.value = item.questions;
+            if (ui.a.value !== item.answers) ui.a.value = item.answers;
 
             const thumbContainer = document.getElementById('thumbContainer');
             if (item.images.length > 0) {
@@ -447,18 +449,28 @@
                     let aBoxH = 0, aBoxY = y + cH - pad, aLines = [];
                     if (s.answers) {
                         doc.setFont(fName, "bold");
+                        doc.setFontSize(10); // CRITICAL FIX: Set font size BEFORE splitting text
                         aLines = doc.splitTextToSize(s.answers, cW - (pad * 2) - 6); 
-                        aBoxH = (aLines.length * 5) + 6; aBoxY = y + cH - pad - aBoxH; 
-                        doc.setFillColor(rgb[0], rgb[1], rgb[2]); doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
-                        doc.setFontSize(10); doc.setTextColor(55, 53, 47); doc.text(aLines, x + pad + 3, aBoxY + 5.5);
+                        aBoxH = (aLines.length * 5) + 6; 
+                        aBoxY = y + cH - pad - aBoxH; 
+                        
+                        doc.setFillColor(rgb[0], rgb[1], rgb[2]); 
+                        doc.rect(x + pad, aBoxY, cW - (pad * 2), aBoxH, 'F');
+                        
+                        doc.setTextColor(55, 53, 47); 
+                        doc.text(aLines, x + pad + 3, aBoxY + 5.5);
                     }
 
                     let qH = 0, qY = aBoxY, qLines = [];
                     if (s.questions) {
                         doc.setFont(fName, "bold");
+                        doc.setFontSize(10); // CRITICAL FIX: Set font size BEFORE splitting text
                         qLines = doc.splitTextToSize(s.questions, cW - (pad * 2) - 6);
-                        qH = qLines.length * 4.5; qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
-                        doc.setFontSize(10); doc.setTextColor(55, 53, 47); doc.text(qLines, x + pad + 3, qY + 3.5); 
+                        qH = qLines.length * 4.5; 
+                        qY = s.answers ? (aBoxY - 3 - qH) : (y + cH - pad - qH);
+                        
+                        doc.setTextColor(55, 53, 47); 
+                        doc.text(qLines, x + pad + 3, qY + 3.5); 
                     }
 
                     if (s.images.length > 0) {
@@ -499,4 +511,5 @@
     </script>
 </body>
 </html>
+
 
